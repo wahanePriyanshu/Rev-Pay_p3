@@ -1,0 +1,5 @@
+package com.revpay.userservice.config;
+
+public class OpenApiConfig {
+
+}

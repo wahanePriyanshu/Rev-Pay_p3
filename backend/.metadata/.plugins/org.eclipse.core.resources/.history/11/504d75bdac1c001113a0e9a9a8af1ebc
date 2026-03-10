@@ -1,0 +1,5 @@
+package com.revpay.userservice.dto.request;
+
+public class LoginRequest {
+
+}

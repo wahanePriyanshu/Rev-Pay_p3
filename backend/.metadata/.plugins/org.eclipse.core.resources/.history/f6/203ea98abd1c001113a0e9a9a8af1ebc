@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:http://localhost:8888
+    
+    eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+      
+    springdoc:
+  swagger-ui:
+    urls:
+      - name: user-service
+        url: /user-service/v3/api-docs
+      - name: wallet-service
+        url: /wallet-service/v3/api-docs

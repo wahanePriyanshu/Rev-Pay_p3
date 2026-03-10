@@ -1,0 +1,5 @@
+package com.revpay.userservice.entity;
+
+public class BusinessProfile {
+
+}
