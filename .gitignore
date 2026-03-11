@@ -19,3 +19,22 @@ target/
 # OS
 .DS_Store
 Thumbs.db
+
+# Eclipse workspace
+backend/.metadata/
+
+# Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+
+# Angular
+frontend/node_modules
+frontend/dist
+
+# Java
+**/target
+
+# Logs
+*.log

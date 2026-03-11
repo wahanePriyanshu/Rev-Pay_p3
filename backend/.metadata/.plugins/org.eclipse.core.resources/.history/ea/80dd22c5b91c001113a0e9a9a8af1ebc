@@ -1,5 +1,0 @@
-package com.revpay.userservice.service.impl;
-
-public class AuthServiceImpl {
-
-}

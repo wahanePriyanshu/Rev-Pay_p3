@@ -1,5 +1,0 @@
-package com.revpay.userservice.repository;
-
-public interface RoleRepository {
-
-}
