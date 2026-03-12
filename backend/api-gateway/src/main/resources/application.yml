@@ -7,7 +7,7 @@ spring:
 
   config:
     import: optional:configserver:http://localhost:8888
-
+    
   cloud:
     gateway:
       routes:
@@ -18,10 +18,22 @@ spring:
           filters:
             - RewritePath=/user-service/(?<segment>.*), /${segment}
 
+        - id: wallet-service-docs
+          uri: http://localhost:8082
+          predicates:
+            - Path=/wallet-service/**
+          filters:
+            - RewritePath=/wallet-service/(?<segment>.*), /${segment}
+
         - id: user-service-api
           uri: http://localhost:8081
           predicates:
             - Path=/api/auth/**,/api/profile/**,/api/business/**,/api/health/**
+
+        - id: wallet-service-api
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/wallet/**
 
 eureka:
   client:

@@ -44,8 +44,9 @@ public class AuthServiceImpl implements AuthService {
 
         User savedUser = userRepository.save(user);
 
-        String token = jwtService.generateToken(savedUser.getEmail());
-        return new AuthResponse(token, savedUser.getId(), "USER");
+        String role = savedUser.getAccountType().name().equals("BUSINESS") ? "BUSINESS" : "USER";
+        String token = jwtService.generateToken(savedUser.getId(), savedUser.getEmail(), role);
+        return new AuthResponse(token, savedUser.getId(), role);
         
         
     }
@@ -62,8 +63,9 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid email/phone or password");
         }
 
-        String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getId(), "USER");
+        String role = user.getAccountType().name().equals("BUSINESS") ? "BUSINESS" : "USER";
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), role);
+        return new AuthResponse(token, user.getId(), role);
         
         
     }
