@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.revpay.walletservice.dto.request.AddMoneyRequest;
+import com.revpay.walletservice.dto.request.WalletOperationRequest;
 import com.revpay.walletservice.dto.request.WithdrawMoneyRequest;
 import com.revpay.walletservice.dto.response.WalletBalanceResponse;
 import com.revpay.walletservice.dto.response.WalletResponse;
@@ -47,6 +48,18 @@ public class WalletController {
                                         @RequestBody WithdrawMoneyRequest request) {
         Long userId = extractUserId(authentication);
         return walletService.withdrawMoney(userId, request);
+    }
+
+    @PostMapping("/api/wallet/internal/debit")
+    public Map<String, String> debitInternal(@RequestBody WalletOperationRequest request) {
+        walletService.debitInternal(request);
+        return Map.of("message", "Wallet debited successfully");
+    }
+
+    @PostMapping("/api/wallet/internal/credit")
+    public Map<String, String> creditInternal(@RequestBody WalletOperationRequest request) {
+        walletService.creditInternal(request);
+        return Map.of("message", "Wallet credited successfully");
     }
 
     @SuppressWarnings("unchecked")

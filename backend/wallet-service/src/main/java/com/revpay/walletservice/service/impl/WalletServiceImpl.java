@@ -6,6 +6,7 @@ import java.util.Random;
 import org.springframework.stereotype.Service;
 
 import com.revpay.walletservice.dto.request.AddMoneyRequest;
+import com.revpay.walletservice.dto.request.WalletOperationRequest;
 import com.revpay.walletservice.dto.request.WithdrawMoneyRequest;
 import com.revpay.walletservice.dto.response.WalletBalanceResponse;
 import com.revpay.walletservice.dto.response.WalletResponse;
@@ -67,6 +68,30 @@ public class WalletServiceImpl implements WalletService {
         return mapToWalletResponse(saved);
     }
 
+    @Override
+    public void debitInternal(WalletOperationRequest request) {
+        validateInternalRequest(request);
+
+        Wallet wallet = getOrCreateWallet(request.getUserId());
+
+        if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
+        walletRepository.save(wallet);
+    }
+
+    @Override
+    public void creditInternal(WalletOperationRequest request) {
+        validateInternalRequest(request);
+
+        Wallet wallet = getOrCreateWallet(request.getUserId());
+
+        wallet.setBalance(wallet.getBalance().add(request.getAmount()));
+        walletRepository.save(wallet);
+    }
+
     private Wallet getOrCreateWallet(Long userId) {
         return walletRepository.findByUserId(userId)
                 .orElseGet(() -> {
@@ -95,7 +120,18 @@ public class WalletServiceImpl implements WalletService {
         }
     }
 
+    private void validateInternalRequest(WalletOperationRequest request) {
+        if (request == null) {
+            throw new RuntimeException("Request cannot be null");
+        }
+        if (request.getUserId() == null) {
+            throw new RuntimeException("User id is required");
+        }
+        validateAmount(request.getAmount());
+    }
+
     private String generateWalletNumber() {
         return "WALLET" + (100000 + new Random().nextInt(900000));
     }
+
 }

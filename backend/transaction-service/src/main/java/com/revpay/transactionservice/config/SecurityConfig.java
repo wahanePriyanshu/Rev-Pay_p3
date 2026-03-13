@@ -1,4 +1,4 @@
-package com.revpay.walletservice.config;
+package com.revpay.transactionservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,8 +9,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.revpay.walletservice.security.JwtAuthEntryPoint;
-import com.revpay.walletservice.security.JwtAuthenticationFilter;
+import com.revpay.transactionservice.security.JwtAuthEntryPoint;
+import com.revpay.transactionservice.security.JwtAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -32,14 +32,13 @@ public class SecurityConfig {
             .sessionManagement(sess ->
                     sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-            		 .requestMatchers(
-            	                "/api/health",
-            	                "/api/wallet/internal/**",
-            	                "/v3/api-docs/**",
-            	                "/swagger-ui/**",
-            	                "/swagger-ui.html"
-            	        ).permitAll()
-            	        .anyRequest().authenticated()
+                    .requestMatchers(
+                            "/api/health",
+                            "/v3/api-docs/**",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html"
+                    ).permitAll()
+                    .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

@@ -34,6 +34,19 @@ spring:
           uri: http://localhost:8082
           predicates:
             - Path=/api/wallet/**
+            
+        - id: transaction-service-docs
+          uri: http://localhost:8083
+          predicates:
+            - Path=/transaction-service/**
+          filters:
+            - RewritePath=/transaction-service/(?<segment>.*), /${segment}
+
+        - id: transaction-service-api
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/transfer/**,/api/requests/**,/api/transactions/**
+            
 
 eureka:
   client:
@@ -47,3 +60,5 @@ springdoc:
         url: /user-service/v3/api-docs
       - name: wallet-service
         url: /wallet-service/v3/api-docs
+      - name: transaction-service
+        url: /transaction-service/v3/api-docs
