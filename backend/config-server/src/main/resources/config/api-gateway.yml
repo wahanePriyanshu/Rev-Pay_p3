@@ -74,7 +74,17 @@ spring:
           predicates:
             - Path=/api/notifications/**,/api/notification-preferences/**
         
-           
+        - id: loan-service-docs
+          uri: http://localhost:8086
+          predicates:
+            - Path=/loan-service/**
+          filters:
+            - RewritePath=/loan-service/(?<segment>.*), /${segment}
+
+        - id: loan-service-api
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/loans/**   
             
 
 eureka:
@@ -95,3 +105,5 @@ springdoc:
         url: /invoice-service/v3/api-docs  
       - name: notification-service
         url: /notification-service/v3/api-docs
+      - name: loan-service
+        url: /loan-service/v3/api-docs
