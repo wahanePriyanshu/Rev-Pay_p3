@@ -6,6 +6,7 @@ import java.util.Random;
 import org.springframework.stereotype.Service;
 
 import com.revpay.transactionservice.client.WalletClient;
+import com.revpay.transactionservice.client.NotificationClient.NotificationClient;
 import com.revpay.transactionservice.dto.request.CreateMoneyRequestDto;
 import com.revpay.transactionservice.dto.request.SendMoneyRequest;
 import com.revpay.transactionservice.dto.response.MoneyRequestResponse;
@@ -19,206 +20,247 @@ import com.revpay.transactionservice.service.TransactionService;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    private final TransactionRepository transactionRepository;
-    private final MoneyRequestRepository moneyRequestRepository;
-    private final WalletClient walletClient;
+	private final TransactionRepository transactionRepository;
+	private final MoneyRequestRepository moneyRequestRepository;
+	private final WalletClient walletClient;
 
-    public TransactionServiceImpl(TransactionRepository transactionRepository,
-                                  MoneyRequestRepository moneyRequestRepository,
-                                  WalletClient walletClient) {
-        this.transactionRepository = transactionRepository;
-        this.moneyRequestRepository = moneyRequestRepository;
-        this.walletClient = walletClient;
-    }
+	private final NotificationClient notificationClient;
 
-    @Override
-    public TransactionResponse sendMoney(Long senderUserId, SendMoneyRequest request) {
+	public TransactionServiceImpl(TransactionRepository transactionRepository,
+			MoneyRequestRepository moneyRequestRepository, WalletClient walletClient,
+			NotificationClient notificationClient) {
+		this.transactionRepository = transactionRepository;
+		this.moneyRequestRepository = moneyRequestRepository;
+		this.walletClient = walletClient;
+		this.notificationClient = notificationClient;
+	}
 
-        if (request.getReceiverUserId() == null) {
-            throw new RuntimeException("Receiver user id is required");
-        }
+	@Override
+	public TransactionResponse sendMoney(Long senderUserId, SendMoneyRequest request) {
 
-        if (senderUserId.equals(request.getReceiverUserId())) {
-            throw new RuntimeException("Sender and receiver cannot be the same");
-        }
+		if (request.getReceiverUserId() == null) {
+			throw new RuntimeException("Receiver user id is required");
+		}
 
-        validateAmount(request.getAmount());
+		if (senderUserId.equals(request.getReceiverUserId())) {
+			throw new RuntimeException("Sender and receiver cannot be the same");
+		}
 
-        WalletClient.WalletOperationRequest debitRequest = new WalletClient.WalletOperationRequest();
-        debitRequest.setUserId(senderUserId);
-        debitRequest.setAmount(request.getAmount());
+		validateAmount(request.getAmount());
 
-        WalletClient.WalletOperationRequest creditRequest = new WalletClient.WalletOperationRequest();
-        creditRequest.setUserId(request.getReceiverUserId());
-        creditRequest.setAmount(request.getAmount());
+		WalletClient.WalletOperationRequest debitRequest = new WalletClient.WalletOperationRequest();
+		debitRequest.setUserId(senderUserId);
+		debitRequest.setAmount(request.getAmount());
 
-        walletClient.debit(debitRequest);
-        walletClient.credit(creditRequest);
+		WalletClient.WalletOperationRequest creditRequest = new WalletClient.WalletOperationRequest();
+		creditRequest.setUserId(request.getReceiverUserId());
+		creditRequest.setAmount(request.getAmount());
 
-        Transaction transaction = new Transaction();
-        transaction.setTransactionRef(generateTransactionRef());
-        transaction.setSenderUserId(senderUserId);
-        transaction.setReceiverUserId(request.getReceiverUserId());
-        transaction.setAmount(request.getAmount());
-        transaction.setStatus("SUCCESS");
-        transaction.setType("TRANSFER");
-        transaction.setDescription(request.getDescription());
+		walletClient.debit(debitRequest);
+		walletClient.credit(creditRequest);
 
-        Transaction saved = transactionRepository.save(transaction);
+		Transaction transaction = new Transaction();
+		transaction.setTransactionRef(generateTransactionRef());
+		transaction.setSenderUserId(senderUserId);
+		transaction.setReceiverUserId(request.getReceiverUserId());
+		transaction.setAmount(request.getAmount());
+		transaction.setStatus("SUCCESS");
+		transaction.setType("TRANSFER");
+		transaction.setDescription(request.getDescription());
 
-        return mapToTransactionResponse(saved);
-    }
+		Transaction saved = transactionRepository.save(transaction);
 
-    @Override
-    public MoneyRequestResponse createRequest(Long requesterUserId, CreateMoneyRequestDto request) {
+		createNotification(senderUserId, "Money sent",
+				"You sent ₹" + request.getAmount() + " to user " + request.getReceiverUserId(), "TRANSACTION",
+				"TRANSACTION", saved.getId());
 
-        if (request.getPayerUserId() == null) {
-            throw new RuntimeException("Payer user id is required");
-        }
+		createNotification(request.getReceiverUserId(), "Money received",
+				"You received ₹" + request.getAmount() + " from user " + senderUserId, "TRANSACTION", "TRANSACTION",
+				saved.getId());
 
-        if (requesterUserId.equals(request.getPayerUserId())) {
-            throw new RuntimeException("Requester and payer cannot be the same");
-        }
+		return mapToTransactionResponse(saved);
+	}
 
-        validateAmount(request.getAmount());
+	@Override
+	public MoneyRequestResponse createRequest(Long requesterUserId, CreateMoneyRequestDto request) {
 
-        MoneyRequest moneyRequest = new MoneyRequest();
-        moneyRequest.setRequestRef(generateRequestRef());
-        moneyRequest.setRequesterUserId(requesterUserId);
-        moneyRequest.setPayerUserId(request.getPayerUserId());
-        moneyRequest.setAmount(request.getAmount());
-        moneyRequest.setNote(request.getNote());
-        moneyRequest.setStatus("PENDING");
+		if (request.getPayerUserId() == null) {
+			throw new RuntimeException("Payer user id is required");
+		}
 
-        MoneyRequest saved = moneyRequestRepository.save(moneyRequest);
+		if (requesterUserId.equals(request.getPayerUserId())) {
+			throw new RuntimeException("Requester and payer cannot be the same");
+		}
 
-        return mapToMoneyRequestResponse(saved);
-    }
+		validateAmount(request.getAmount());
 
-    @Override
-    public MoneyRequestResponse acceptRequest(Long currentUserId, Long requestId) {
+		MoneyRequest moneyRequest = new MoneyRequest();
+		moneyRequest.setRequestRef(generateRequestRef());
+		moneyRequest.setRequesterUserId(requesterUserId);
+		moneyRequest.setPayerUserId(request.getPayerUserId());
+		moneyRequest.setAmount(request.getAmount());
+		moneyRequest.setNote(request.getNote());
+		moneyRequest.setStatus("PENDING");
 
-        MoneyRequest moneyRequest = moneyRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Money request not found"));
+		MoneyRequest saved = moneyRequestRepository.save(moneyRequest);
 
-        if (!currentUserId.equals(moneyRequest.getPayerUserId())) {
-            throw new RuntimeException("You are not allowed to accept this request");
-        }
+		createNotification(request.getPayerUserId(), "Money request received",
+				"User " + requesterUserId + " requested ₹" + request.getAmount() + " from you", "REQUEST", "REQUEST",
+				saved.getId());
 
-        if (!"PENDING".equals(moneyRequest.getStatus())) {
-            throw new RuntimeException("Only pending requests can be accepted");
-        }
+		return mapToMoneyRequestResponse(saved);
+	}
 
-        WalletClient.WalletOperationRequest debitRequest = new WalletClient.WalletOperationRequest();
-        debitRequest.setUserId(moneyRequest.getPayerUserId());
-        debitRequest.setAmount(moneyRequest.getAmount());
+	@Override
+	public MoneyRequestResponse acceptRequest(Long currentUserId, Long requestId) {
 
-        WalletClient.WalletOperationRequest creditRequest = new WalletClient.WalletOperationRequest();
-        creditRequest.setUserId(moneyRequest.getRequesterUserId());
-        creditRequest.setAmount(moneyRequest.getAmount());
+		MoneyRequest moneyRequest = moneyRequestRepository.findById(requestId)
+				.orElseThrow(() -> new RuntimeException("Money request not found"));
 
-        walletClient.debit(debitRequest);
-        walletClient.credit(creditRequest);
+		if (!currentUserId.equals(moneyRequest.getPayerUserId())) {
+			throw new RuntimeException("You are not allowed to accept this request");
+		}
 
-        moneyRequest.setStatus("ACCEPTED");
-        MoneyRequest savedRequest = moneyRequestRepository.save(moneyRequest);
+		if (!"PENDING".equals(moneyRequest.getStatus())) {
+			throw new RuntimeException("Only pending requests can be accepted");
+		}
 
-        Transaction transaction = new Transaction();
-        transaction.setTransactionRef(generateTransactionRef());
-        transaction.setSenderUserId(moneyRequest.getPayerUserId());
-        transaction.setReceiverUserId(moneyRequest.getRequesterUserId());
-        transaction.setAmount(moneyRequest.getAmount());
-        transaction.setStatus("SUCCESS");
-        transaction.setType("REQUEST_ACCEPTED");
-        transaction.setDescription(moneyRequest.getNote());
+		WalletClient.WalletOperationRequest debitRequest = new WalletClient.WalletOperationRequest();
+		debitRequest.setUserId(moneyRequest.getPayerUserId());
+		debitRequest.setAmount(moneyRequest.getAmount());
 
-        transactionRepository.save(transaction);
+		WalletClient.WalletOperationRequest creditRequest = new WalletClient.WalletOperationRequest();
+		creditRequest.setUserId(moneyRequest.getRequesterUserId());
+		creditRequest.setAmount(moneyRequest.getAmount());
 
-        return mapToMoneyRequestResponse(savedRequest);
-    }
+		walletClient.debit(debitRequest);
+		walletClient.credit(creditRequest);
 
-    @Override
-    public MoneyRequestResponse declineRequest(Long currentUserId, Long requestId) {
+		moneyRequest.setStatus("ACCEPTED");
+		MoneyRequest savedRequest = moneyRequestRepository.save(moneyRequest);
 
-        MoneyRequest moneyRequest = moneyRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Money request not found"));
+		Transaction transaction = new Transaction();
+		transaction.setTransactionRef(generateTransactionRef());
+		transaction.setSenderUserId(moneyRequest.getPayerUserId());
+		transaction.setReceiverUserId(moneyRequest.getRequesterUserId());
+		transaction.setAmount(moneyRequest.getAmount());
+		transaction.setStatus("SUCCESS");
+		transaction.setType("REQUEST_ACCEPTED");
+		transaction.setDescription(moneyRequest.getNote());
 
-        if (!currentUserId.equals(moneyRequest.getPayerUserId())) {
-            throw new RuntimeException("You are not allowed to decline this request");
-        }
+		transactionRepository.save(transaction);
 
-        if (!"PENDING".equals(moneyRequest.getStatus())) {
-            throw new RuntimeException("Only pending requests can be declined");
-        }
+		Transaction savedTransaction = transactionRepository.save(transaction);
 
-        moneyRequest.setStatus("DECLINED");
-        MoneyRequest saved = moneyRequestRepository.save(moneyRequest);
+		createNotification(
+				moneyRequest.getRequesterUserId(), "Money request accepted", "Your request for ₹"
+						+ moneyRequest.getAmount() + " was accepted by user " + moneyRequest.getPayerUserId(),
+				"REQUEST", "TRANSACTION", savedTransaction.getId());
 
-        return mapToMoneyRequestResponse(saved);
-    }
+		createNotification(moneyRequest.getPayerUserId(), "Payment completed",
+				"You paid ₹" + moneyRequest.getAmount() + " for request " + moneyRequest.getRequestRef(), "TRANSACTION",
+				"TRANSACTION", savedTransaction.getId());
 
-    @Override
-    public List<MoneyRequestResponse> getOutgoingRequests(Long requesterUserId) {
-        return moneyRequestRepository.findByRequesterUserIdOrderByCreatedAtDesc(requesterUserId)
-                .stream()
-                .map(this::mapToMoneyRequestResponse)
-                .toList();
-    }
+		return mapToMoneyRequestResponse(savedRequest);
+	}
 
-    @Override
-    public List<MoneyRequestResponse> getIncomingRequests(Long payerUserId) {
-        return moneyRequestRepository.findByPayerUserIdOrderByCreatedAtDesc(payerUserId)
-                .stream()
-                .map(this::mapToMoneyRequestResponse)
-                .toList();
-    }
+	@Override
+	public MoneyRequestResponse declineRequest(Long currentUserId, Long requestId) {
 
-    @Override
-    public List<TransactionResponse> getMyTransactions(Long userId) {
-        return transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDesc(userId, userId)
-                .stream()
-                .map(this::mapToTransactionResponse)
-                .toList();
-    }
+		MoneyRequest moneyRequest = moneyRequestRepository.findById(requestId)
+				.orElseThrow(() -> new RuntimeException("Money request not found"));
 
-    private void validateAmount(java.math.BigDecimal amount) {
-        if (amount == null || amount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Amount must be greater than zero");
-        }
-    }
+		if (!currentUserId.equals(moneyRequest.getPayerUserId())) {
+			throw new RuntimeException("You are not allowed to decline this request");
+		}
 
-    private String generateTransactionRef() {
-        return "TXN" + (100000 + new Random().nextInt(900000));
-    }
+		if (!"PENDING".equals(moneyRequest.getStatus())) {
+			throw new RuntimeException("Only pending requests can be declined");
+		}
 
-    private String generateRequestRef() {
-        return "REQ" + (100000 + new Random().nextInt(900000));
-    }
+		moneyRequest.setStatus("DECLINED");
+		MoneyRequest saved = moneyRequestRepository.save(moneyRequest);
 
-    private TransactionResponse mapToTransactionResponse(Transaction transaction) {
-        TransactionResponse response = new TransactionResponse();
-        response.setId(transaction.getId());
-        response.setTransactionRef(transaction.getTransactionRef());
-        response.setSenderUserId(transaction.getSenderUserId());
-        response.setReceiverUserId(transaction.getReceiverUserId());
-        response.setAmount(transaction.getAmount());
-        response.setStatus(transaction.getStatus());
-        response.setType(transaction.getType());
-        response.setDescription(transaction.getDescription());
-        response.setCreatedAt(transaction.getCreatedAt());
-        return response;
-    }
+		createNotification(
+				moneyRequest.getRequesterUserId(), "Money request declined", "Your request for ₹"
+						+ moneyRequest.getAmount() + " was declined by user " + moneyRequest.getPayerUserId(),
+				"REQUEST", "REQUEST", saved.getId());
 
-    private MoneyRequestResponse mapToMoneyRequestResponse(MoneyRequest moneyRequest) {
-        MoneyRequestResponse response = new MoneyRequestResponse();
-        response.setId(moneyRequest.getId());
-        response.setRequestRef(moneyRequest.getRequestRef());
-        response.setRequesterUserId(moneyRequest.getRequesterUserId());
-        response.setPayerUserId(moneyRequest.getPayerUserId());
-        response.setAmount(moneyRequest.getAmount());
-        response.setNote(moneyRequest.getNote());
-        response.setStatus(moneyRequest.getStatus());
-        response.setCreatedAt(moneyRequest.getCreatedAt());
-        return response;
-    }
+		return mapToMoneyRequestResponse(saved);
+	}
+
+	@Override
+	public List<MoneyRequestResponse> getOutgoingRequests(Long requesterUserId) {
+		return moneyRequestRepository.findByRequesterUserIdOrderByCreatedAtDesc(requesterUserId).stream()
+				.map(this::mapToMoneyRequestResponse).toList();
+	}
+
+	@Override
+	public List<MoneyRequestResponse> getIncomingRequests(Long payerUserId) {
+		return moneyRequestRepository.findByPayerUserIdOrderByCreatedAtDesc(payerUserId).stream()
+				.map(this::mapToMoneyRequestResponse).toList();
+	}
+
+	@Override
+	public List<TransactionResponse> getMyTransactions(Long userId) {
+		return transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDesc(userId, userId).stream()
+				.map(this::mapToTransactionResponse).toList();
+	}
+
+	private void validateAmount(java.math.BigDecimal amount) {
+		if (amount == null || amount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+			throw new RuntimeException("Amount must be greater than zero");
+		}
+	}
+
+	private String generateTransactionRef() {
+		return "TXN" + (100000 + new Random().nextInt(900000));
+	}
+
+	private String generateRequestRef() {
+		return "REQ" + (100000 + new Random().nextInt(900000));
+	}
+
+	private TransactionResponse mapToTransactionResponse(Transaction transaction) {
+		TransactionResponse response = new TransactionResponse();
+		response.setId(transaction.getId());
+		response.setTransactionRef(transaction.getTransactionRef());
+		response.setSenderUserId(transaction.getSenderUserId());
+		response.setReceiverUserId(transaction.getReceiverUserId());
+		response.setAmount(transaction.getAmount());
+		response.setStatus(transaction.getStatus());
+		response.setType(transaction.getType());
+		response.setDescription(transaction.getDescription());
+		response.setCreatedAt(transaction.getCreatedAt());
+		return response;
+	}
+
+	private MoneyRequestResponse mapToMoneyRequestResponse(MoneyRequest moneyRequest) {
+		MoneyRequestResponse response = new MoneyRequestResponse();
+		response.setId(moneyRequest.getId());
+		response.setRequestRef(moneyRequest.getRequestRef());
+		response.setRequesterUserId(moneyRequest.getRequesterUserId());
+		response.setPayerUserId(moneyRequest.getPayerUserId());
+		response.setAmount(moneyRequest.getAmount());
+		response.setNote(moneyRequest.getNote());
+		response.setStatus(moneyRequest.getStatus());
+		response.setCreatedAt(moneyRequest.getCreatedAt());
+		return response;
+	}
+
+	private void createNotification(Long userId, String title, String message, String type, String referenceType,
+			Long referenceId) {
+
+		NotificationClient.CreateNotificationRequest request = new NotificationClient.CreateNotificationRequest();
+
+		request.setUserId(userId);
+		request.setTitle(title);
+		request.setMessage(message);
+		request.setType(type);
+		request.setReferenceType(referenceType);
+		request.setReferenceId(referenceId);
+
+		notificationClient.createNotification(request);
+	}
+
 }

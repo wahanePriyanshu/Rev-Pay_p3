@@ -60,6 +60,20 @@ spring:
           uri: http://localhost:8084
           predicates:
             - Path=/api/invoices/**,/api/customers/**  
+        
+        
+        - id: notification-service-docs
+          uri: http://localhost:8085
+          predicates:
+            - Path=/notification-service/**
+          filters:
+            - RewritePath=/notification-service/(?<segment>.*), /${segment}
+
+        - id: notification-service-api
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/notifications/**,/api/notification-preferences/**
+        
            
             
 
@@ -79,3 +93,5 @@ springdoc:
         url: /transaction-service/v3/api-docs
       - name: invoice-service
         url: /invoice-service/v3/api-docs  
+      - name: notification-service
+        url: /notification-service/v3/api-docs
