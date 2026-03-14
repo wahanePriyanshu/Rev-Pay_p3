@@ -25,6 +25,8 @@ export class ProfileComponent implements OnInit {
   showOldPassword = false;
   showNewPassword = false;
   showOldPin = false;
+  showNewPin = false;
+  showSetPin = false;
 
   constructor(
     private profileService: ProfileService,
@@ -75,10 +77,12 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  togglePasswordVisibility(field: 'oldPassword' | 'newPassword' | 'oldPin') {
+  togglePasswordVisibility(field: 'oldPassword' | 'newPassword' | 'oldPin' | 'newPin' | 'setPin') {
     if (field === 'oldPassword') this.showOldPassword = !this.showOldPassword;
     if (field === 'newPassword') this.showNewPassword = !this.showNewPassword;
-    if (field === 'oldPin') this.showOldPin = !this.showOldPin;
+    if (field === 'oldPin')      this.showOldPin = !this.showOldPin;
+    if (field === 'newPin')      this.showNewPin = !this.showNewPin;
+    if (field === 'setPin')      this.showSetPin = !this.showSetPin;
   }
 
   submitPassword() {

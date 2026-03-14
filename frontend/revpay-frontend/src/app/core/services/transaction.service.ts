@@ -15,6 +15,15 @@ export interface TransactionDto {
   createdAt: string;
 }
 
+export interface ActivityItem {
+  id: number;
+  userId: number;
+  action: string;
+  description: string;
+  ipAddress?: string;
+  createdAt: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -26,5 +35,20 @@ export class TransactionService {
   getMyTransactions(): Observable<TransactionDto[]> {
     return this.http.get<TransactionDto[]>(`${this.API}/transactions/my`);
   }
-}
 
+  getMyActivity(): Observable<ActivityItem[]> {
+    return this.http.get<ActivityItem[]>(`${this.API}/activity/my`);
+  }
+
+  exportCsv(): Observable<Blob> {
+    return this.http.get(`${this.API}/transactions/export/csv`, {
+      responseType: 'blob'
+    });
+  }
+
+  exportPdf(): Observable<Blob> {
+    return this.http.get(`${this.API}/transactions/export/pdf`, {
+      responseType: 'blob'
+    });
+  }
+}

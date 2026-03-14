@@ -1,73 +1,141 @@
 <div class="transactions-page">
-  <h2 class="mb-3">Transactions</h2>
 
-  <div class="input-group mb-3">
-    <span class="input-group-text">
-      🔍
-    </span>
-    <input
-      type="text"
-      class="form-control"
-      placeholder="Search by name, note, or status"
-      [(ngModel)]="searchTerm"
-      (ngModelChange)="applySearch()"
-    >
-  </div>
-
-  <div class="card">
-    <div class="table-responsive">
-      <table class="table mb-0">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Type</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Note</th>
-            <th>Created at</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let tx of pagedTransactions; let i = index">
-            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-            <td>
-              <span
-                class="badge"
-                [ngClass]="getTypeBadgeClass(tx.type)"
-              >
-                {{ tx.type }}
-              </span>
-            </td>
-            <td>{{ tx.from }}</td>
-            <td>{{ tx.to }}</td>
-            <td>{{ tx.amount }}</td>
-            <td>{{ tx.status }}</td>
-            <td>{{ tx.note }}</td>
-            <td>{{ tx.createdAt }}</td>
-          </tr>
-          <tr *ngIf="!pagedTransactions.length">
-            <td colspan="8" class="text-center text-muted py-3">
-              No transactions found
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- ===== Header row ===== -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Transactions</h2>
+    <div class="export-actions d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" (click)="exportCsv()" [disabled]="exporting">
+        <span *ngIf="exporting === 'csv'" class="spinner-border spinner-border-sm me-1"></span>
+        <i *ngIf="exporting !== 'csv'" class="ti ti-file-type-csv me-1"></i>
+        Export CSV
+      </button>
+      <button class="btn btn-outline-danger btn-sm" (click)="exportPdf()" [disabled]="exporting">
+        <span *ngIf="exporting === 'pdf'" class="spinner-border spinner-border-sm me-1"></span>
+        <i *ngIf="exporting !== 'pdf'" class="ti ti-file-type-pdf me-1"></i>
+        Export PDF
+      </button>
     </div>
   </div>
 
-  <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="filteredTransactions.length > pageSize">
-    <div>
-      Showing {{ (currentPage - 1) * pageSize + 1 }} to
-      {{ (currentPage * pageSize) > filteredTransactions.length ? filteredTransactions.length : (currentPage * pageSize) }}
-      of {{ filteredTransactions.length }} transactions
+  <!-- ===== Tabs ===== -->
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'transactions'" (click)="activeTab = 'transactions'">
+        <i class="ti ti-credit-card me-1"></i> Transactions
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'activity'" (click)="setActivityTab()">
+        <i class="ti ti-history me-1"></i> Activity Log
+      </button>
+    </li>
+  </ul>
+
+  <!-- ===== Transactions tab ===== -->
+  <div *ngIf="activeTab === 'transactions'">
+    <div class="input-group mb-3">
+      <span class="input-group-text bg-white border-end-0">
+        <i class="ti ti-search text-muted"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control border-start-0"
+        placeholder="Search by name, note, or status"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applySearch()"
+      >
     </div>
-    <div class="btn-group">
-      <button class="btn btn-outline-primary" [disabled]="currentPage === 1" (click)="prevPage()">Previous</button>
-      <button class="btn btn-outline-primary" disabled>Page {{ currentPage }} of {{ totalPages }}</button>
-      <button class="btn btn-outline-primary" [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Type</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Note</th>
+              <th>Created at</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of pagedTransactions; let i = index">
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td>
+                <span class="badge" [ngClass]="getTypeBadgeClass(tx.type)">{{ tx.type }}</span>
+              </td>
+              <td>{{ tx.from }}</td>
+              <td>{{ tx.to }}</td>
+              <td>
+                <strong [class.text-danger]="tx.type === 'SENT' || tx.type === 'WITHDRAWN'"
+                        [class.text-success]="tx.type === 'RECEIVED' || tx.type === 'ADDED'">
+                  ₹{{ tx.amount | number:'1.2-2' }}
+                </strong>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="tx.status === 'SUCCESS' ? 'bg-success' : 'bg-warning text-dark'">
+                  {{ tx.status }}
+                </span>
+              </td>
+              <td class="text-muted small">{{ tx.note }}</td>
+              <td class="text-muted small">{{ tx.createdAt }}</td>
+            </tr>
+            <tr *ngIf="!pagedTransactions.length">
+              <td colspan="8" class="text-center text-muted py-5">
+                <i class="ti ti-inbox" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.4"></i>
+                No transactions found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="filteredTransactions.length > pageSize">
+      <div class="text-muted small">
+        Showing {{ (currentPage - 1) * pageSize + 1 }} &ndash;
+        {{ (currentPage * pageSize) > filteredTransactions.length ? filteredTransactions.length : (currentPage * pageSize) }}
+        of {{ filteredTransactions.length }}
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline-primary btn-sm" [disabled]="currentPage === 1" (click)="prevPage()">
+          <i class="ti ti-chevron-left"></i> Prev
+        </button>
+        <button class="btn btn-outline-primary btn-sm" disabled>{{ currentPage }} / {{ totalPages }}</button>
+        <button class="btn btn-outline-primary btn-sm" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          Next <i class="ti ti-chevron-right"></i>
+        </button>
+      </div>
     </div>
   </div>
+
+  <!-- ===== Activity Log tab ===== -->
+  <div *ngIf="activeTab === 'activity'">
+    <div *ngIf="activityLoading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted mt-2">Loading activity…</p>
+    </div>
+
+    <div *ngIf="!activityLoading && activityItems.length === 0" class="text-center text-muted py-5">
+      <i class="ti ti-clipboard-off" style="font-size:2.5rem;display:block;margin-bottom:.75rem;opacity:.4"></i>
+      No activity recorded yet.
+    </div>
+
+    <div class="activity-feed" *ngIf="!activityLoading && activityItems.length > 0">
+      <div class="activity-item" *ngFor="let item of activityItems">
+        <div class="activity-dot">
+          <i class="ti ti-point-filled"></i>
+        </div>
+        <div class="activity-content">
+          <div class="activity-action">{{ item.action }}</div>
+          <div class="activity-desc text-muted small">{{ item.description }}</div>
+          <div class="activity-time text-muted x-small">{{ item.createdAt | date:'dd MMM yyyy, HH:mm' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
-

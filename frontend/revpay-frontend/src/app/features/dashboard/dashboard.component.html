@@ -327,3 +327,107 @@
   </div>
 
 </div>
+
+<!-- ===== Send Money Modal ===== -->
+<div class="modal-backdrop-custom" *ngIf="showSendModal" (click)="closeSendModal()"></div>
+<div class="send-money-modal" *ngIf="showSendModal" role="dialog" aria-modal="true">
+
+  <!-- Success state -->
+  <div *ngIf="sendSuccess" class="modal-success-state">
+    <div class="success-icon"><i class="ti ti-circle-check"></i></div>
+    <div class="success-text">{{ sendSuccess }}</div>
+  </div>
+
+  <!-- Step 1: Amount & Note -->
+  <div *ngIf="!sendSuccess && sendModalStep === 1">
+    <div class="modal-header-bar">
+      <span class="modal-title-text">Send Money</span>
+      <button class="modal-close-btn" (click)="closeSendModal()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="modal-recipient" *ngIf="selectedSendUser">
+      <div class="recipient-avatar" [style.background]="selectedSendUser.avatarColor">
+        {{ getInitials(selectedSendUser.name) }}
+      </div>
+      <div class="recipient-info">
+        <div class="recipient-name">{{ selectedSendUser.name }}</div>
+        <div class="recipient-email">{{ selectedSendUser.email }}</div>
+      </div>
+    </div>
+
+    <div class="modal-body-pad">
+      <label class="modal-field-label">Enter Amount</label>
+      <div class="amount-input-wrap">
+        <span class="currency-prefix">₹</span>
+        <input
+          type="number"
+          class="amount-input"
+          placeholder="0.00"
+          [(ngModel)]="sendAmount"
+          min="1"
+          autofocus
+        >
+      </div>
+
+      <label class="modal-field-label mt-3">Note <span class="optional-tag">(optional)</span></label>
+      <textarea
+        class="note-input"
+        placeholder="Add a note (optional)"
+        [(ngModel)]="sendNote"
+        rows="2"
+      ></textarea>
+
+      <p class="balance-hint">
+        Remaining Balance:
+        <strong>{{ formattedBalance }}</strong>
+      </p>
+
+      <div class="alert alert-danger py-2 small" *ngIf="sendError">{{ sendError }}</div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="closeSendModal()">Cancel</button>
+        <button class="btn-modal-primary" (click)="proceedToPin()">
+          Next &mdash; Enter PIN &nbsp;<i class="ti ti-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: PIN -->
+  <div *ngIf="!sendSuccess && sendModalStep === 2">
+    <div class="modal-header-bar">
+      <button class="back-btn" (click)="sendModalStep = 1"><i class="ti ti-arrow-left"></i> Back</button>
+      <span class="modal-title-text">Enter Transaction PIN</span>
+      <button class="modal-close-btn" (click)="closeSendModal()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="modal-body-pad">
+      <p class="pin-desc">Confirm sending <strong>₹{{ sendAmount }}</strong> to <strong>{{ selectedSendUser?.name }}</strong></p>
+
+      <label class="modal-field-label">Transaction PIN</label>
+      <div class="pin-input-wrap">
+        <input
+          [type]="showSendPin ? 'text' : 'password'"
+          class="amount-input"
+          placeholder="Enter PIN"
+          [(ngModel)]="sendPin"
+          maxlength="6"
+        >
+        <button class="pin-eye-btn" type="button" (click)="showSendPin = !showSendPin">
+          <i class="ti" [ngClass]="showSendPin ? 'ti-eye-off' : 'ti-eye'"></i>
+        </button>
+      </div>
+
+      <div class="alert alert-danger py-2 small mt-2" *ngIf="sendError">{{ sendError }}</div>
+
+      <div class="modal-actions mt-3">
+        <button class="btn-modal-cancel" (click)="closeSendModal()">Cancel</button>
+        <button class="btn-modal-primary" (click)="confirmSend()" [disabled]="sendLoading">
+          <span *ngIf="sendLoading" class="spinner-border spinner-border-sm me-1"></span>
+          {{ sendLoading ? 'Sending…' : 'Send ₹' + sendAmount }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

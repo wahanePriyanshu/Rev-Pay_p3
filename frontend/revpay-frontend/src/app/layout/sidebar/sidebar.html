@@ -6,7 +6,7 @@
 
       <li class="nav-item">
         <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
-          <i class="nav-icon cil-speedometer"></i>
+          <i class="ti ti-layout-dashboard nav-icon"></i>
           Dashboard
         </a>
       </li>
@@ -16,21 +16,21 @@
            [routerLink]="['/wallet']"
            routerLinkActive="active"
            [routerLinkActiveOptions]="{ exact: true }">
-          <i class="nav-icon cil-wallet"></i>
+          <i class="ti ti-wallet nav-icon"></i>
           Wallet
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link" routerLink="/transactions" routerLinkActive="active">
-          <i class="nav-icon cil-swap-horizontal"></i>
+          <i class="ti ti-arrows-exchange nav-icon"></i>
           Transactions
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link" routerLink="/notifications" routerLinkActive="active">
-          <i class="nav-icon cil-bell"></i>
+          <i class="ti ti-bell nav-icon"></i>
           Notifications
         </a>
       </li>
@@ -38,21 +38,21 @@
       <!-- Business-only links -->
       <li class="nav-item" *ngIf="isBusiness">
         <a class="nav-link" routerLink="/invoices" routerLinkActive="active">
-          <i class="nav-icon cil-description"></i>
+          <i class="ti ti-file-invoice nav-icon"></i>
           Invoices
         </a>
       </li>
 
       <li class="nav-item" *ngIf="isBusiness">
         <a class="nav-link" routerLink="/loans" routerLinkActive="active">
-          <i class="nav-icon cil-bank"></i>
+          <i class="ti ti-building-bank nav-icon"></i>
           Loans
         </a>
       </li>
 
       <li class="nav-item" *ngIf="isBusiness">
         <a class="nav-link" routerLink="/customers" routerLinkActive="active">
-          <i class="nav-icon cil-people"></i>
+          <i class="ti ti-users nav-icon"></i>
           Customers
         </a>
       </li>
@@ -63,20 +63,20 @@
   <!-- Profile section at bottom -->
   <div class="sidebar-footer">
     <button class="profile-toggle" type="button" (click)="toggleProfileMenu()">
-      <div class="avatar-circle">U</div>
+      <div class="avatar-circle">{{ avatarInitials }}</div>
       <div class="profile-text">
-        <div class="name">User</div>
+        <div class="name">{{ displayName }}</div>
         <div class="subtitle">View profile</div>
       </div>
-      <span class="chevron" [ngClass]="{ 'open': showProfileMenu }">▾</span>
+      <i class="ti ti-chevron-down chevron" [ngClass]="{ 'open': showProfileMenu }"></i>
     </button>
 
     <div class="profile-menu" *ngIf="showProfileMenu">
       <button type="button" class="menu-item" (click)="goToProfile()">
-        Profile
+        <i class="ti ti-user me-2"></i>Profile
       </button>
       <button type="button" class="menu-item text-danger" (click)="logout()">
-        Logout
+        <i class="ti ti-logout me-2"></i>Logout
       </button>
     </div>
   </div>

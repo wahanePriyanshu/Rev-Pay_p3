@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { WalletService } from '../../core/services/wallet.service';
 import { TransactionService, TransactionDto } from '../../core/services/transaction.service';
 import { TransferService } from '../../core/services/transfer.service';
@@ -25,7 +26,7 @@ interface UserRecipient {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -59,6 +60,19 @@ export class DashboardComponent implements OnInit {
 
   // ---- Personal ----
   favoriteUsers: UserRecipient[] = [];
+  private userMap = new Map<number, string>(); // userId → full name
+
+  // ---- Send Money Modal ----
+  showSendModal = false;
+  sendModalStep: 1 | 2 = 1;   // step 1 = amount+note, step 2 = PIN
+  selectedSendUser: UserRecipient | null = null;
+  sendAmount: number | null = null;
+  sendNote = '';
+  sendPin = '';
+  sendLoading = false;
+  sendError = '';
+  sendSuccess = '';
+  showSendPin = false;
 
   // ---- Business Stats (placeholders until dedicated services exist) ----
   pendingInvoices = 0;
@@ -79,21 +93,28 @@ export class DashboardComponent implements OnInit {
     this.loadUserFromToken();
     this.loadProfile();
     this.loadWalletBalance();
-    this.loadTransactions();
+    // transactions are loaded inside loadUsers() to ensure the name map is ready
   }
 
-  // ---- Profile ----
   private loadProfile(): void {
     this.profileService.getProfile().subscribe({
       next: res => {
         this.ngZone.run(() => {
-          if (res.fullName) this.userName = res.fullName;
+          if (res.fullName) {
+            this.userName = res.fullName;
+            // Store so sidebar and other components can use it
+            localStorage.setItem('userName', res.fullName);
+          }
           this.accountType = res.accountType || '';
 
           // Persist to localStorage so sidebar can detect it on any page
           if (res.accountType) {
             localStorage.setItem('accountType', res.accountType);
           }
+
+          // Add self to the user map
+          const myId = Number(localStorage.getItem('userId'));
+          if (myId && res.fullName) this.userMap.set(myId, res.fullName);
 
           this.loadUsers(); // both personal and business need user list for Send Money
           this.cdr.detectChanges();
@@ -107,14 +128,25 @@ export class DashboardComponent implements OnInit {
     this.profileService.getAllUsers().subscribe({
       next: res => {
         this.ngZone.run(() => {
-          this.favoriteUsers = res.map((u, i) => ({
+          this.favoriteUsers = res.map((u: any, i: number) => ({
             id: u.id,
-            name: u.name || u.fullName || 'User',
+            name: u.fullName || u.name || u.email || `User ${u.id}`,
             email: u.email,
             avatarColor: colors[i % colors.length]
           }));
+          // Build the lookup map
+          this.userMap.clear();
+          res.forEach((u: any) => {
+            this.userMap.set(u.id, u.fullName || u.name || u.email || `User ${u.id}`);
+          });
           this.cdr.detectChanges();
+          // Now load transactions — map is ready so names will resolve
+          this.loadTransactions();
         });
+      },
+      error: () => {
+        // Even if users fail, still show transactions
+        this.ngZone.run(() => this.loadTransactions());
       }
     });
   }
@@ -183,17 +215,22 @@ export class DashboardComponent implements OnInit {
   }
 
   private buildDescription(tx: TransactionDto, uid: number): string {
+    const resolveName = (userId: number | null | undefined): string => {
+      if (!userId) return 'Unknown';
+      return this.userMap.get(userId) || `User ${userId}`;
+    };
+
     if (tx.type === 'TRANSFER') {
       return tx.senderUserId === uid
-        ? `Transfer to User ${tx.receiverUserId}`
-        : `Transfer from User ${tx.senderUserId}`;
+        ? `Transfer to ${resolveName(tx.receiverUserId)}`
+        : `Transfer from ${resolveName(tx.senderUserId)}`;
     }
     if (tx.type === 'ADD_MONEY') return 'Added money to wallet';
     if (tx.type === 'WITHDRAW') return 'Withdrawn to bank';
     if (tx.type === 'REQUEST_ACCEPTED') {
       return tx.senderUserId === uid
-        ? `Paid request to User ${tx.receiverUserId}`
-        : `Received payment from User ${tx.senderUserId}`;
+        ? `Paid request to ${resolveName(tx.receiverUserId)}`
+        : `Received payment from ${resolveName(tx.senderUserId)}`;
     }
     return tx.description || 'Transaction';
   }
@@ -228,19 +265,73 @@ export class DashboardComponent implements OnInit {
   }
 
   onSendMoney(user: UserRecipient): void {
-    const amount = Number(prompt(`Enter amount to send to ${user.name}`));
-    if (!amount || amount <= 0) return;
-    const pin = prompt('Enter your transaction PIN');
-    if (!pin) return;
-    this.transferService.send({ to: user.email, amount, note: 'Dashboard transfer', pin }).subscribe({
+    this.selectedSendUser = user;
+    this.sendAmount = null;
+    this.sendNote = '';
+    this.sendPin = '';
+    this.sendError = '';
+    this.sendSuccess = '';
+    this.sendModalStep = 1;
+    this.showSendPin = false;
+    this.showSendModal = true;
+  }
+
+  closeSendModal(): void {
+    this.showSendModal = false;
+    this.selectedSendUser = null;
+    this.sendLoading = false;
+    this.sendError = '';
+    this.sendSuccess = '';
+  }
+
+  proceedToPin(): void {
+    if (!this.sendAmount || this.sendAmount <= 0) {
+      this.sendError = 'Please enter a valid amount.';
+      return;
+    }
+    if (this.sendAmount > this.walletBalance()) {
+      this.sendError = 'Insufficient balance.';
+      return;
+    }
+    this.sendError = '';
+    this.sendModalStep = 2;
+  }
+
+  confirmSend(): void {
+    if (!this.sendPin || this.sendPin.length < 4) {
+      this.sendError = 'Enter your 4-digit transaction PIN.';
+      return;
+    }
+    if (!this.selectedSendUser) return;
+    this.sendLoading = true;
+    this.sendError = '';
+
+    const payload = {
+      to: this.selectedSendUser.email,
+      amount: this.sendAmount as number,
+      note: this.sendNote,
+      pin: this.sendPin
+    };
+
+    this.transferService.send(payload).subscribe({
       next: () => {
-        alert('Money sent successfully');
-        this.loadWalletBalance();
-        this.loadTransactions();
+        this.ngZone.run(() => {
+          this.sendLoading = false;
+          this.sendSuccess = `₹${this.sendAmount} sent to ${this.selectedSendUser!.name} successfully!`;
+          this.cdr.detectChanges();
+          setTimeout(() => {
+            this.closeSendModal();
+            this.loadWalletBalance();
+            this.loadTransactions();
+          }, 1500);
+        });
       },
       error: err => {
-        console.error(err);
-        alert('Transfer failed. Check your PIN and balance.');
+        this.ngZone.run(() => {
+          this.sendLoading = false;
+          this.sendError = err?.error?.message || err?.error || 'Transfer failed. Check your PIN and balance.';
+          this.cdr.detectChanges();
+        });
       }
     });
   }
