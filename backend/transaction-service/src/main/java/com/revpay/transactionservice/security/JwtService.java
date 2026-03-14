@@ -15,7 +15,9 @@ public class JwtService {
 
     private static final String SECRET_KEY =
             "revpay-super-secret-key-for-jwt-authentication-2026";
-
+ 
+        
+    
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }

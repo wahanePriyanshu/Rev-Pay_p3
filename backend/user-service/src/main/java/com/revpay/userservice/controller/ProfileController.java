@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.revpay.userservice.dto.request.ChangePasswordRequest;
@@ -34,6 +35,11 @@ public class ProfileController {
     @GetMapping("/api/users")
     public List<UserDto> getAllUsers(Principal principal) {
         return profileService.getAllUsers(principal.getName());
+    }
+
+    @GetMapping("/api/users/by-email")
+    public UserDto getUserByEmail(@RequestParam("email") String email) {
+        return profileService.getUserByEmail(email);
     }
 
     @PutMapping("/api/profile")

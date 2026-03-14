@@ -11,6 +11,7 @@ import java.util.List;
 public interface ProfileService {
     ProfileResponse getMyProfile(String email);
     List<UserDto> getAllUsers(String currentEmail);
+    UserDto getUserByEmail(String email);
     ProfileResponse updateMyProfile(String email, UpdateProfileRequest request);
     String setPin(String email, SetPinRequest request);
     String changePin(String email, ChangePinRequest request);

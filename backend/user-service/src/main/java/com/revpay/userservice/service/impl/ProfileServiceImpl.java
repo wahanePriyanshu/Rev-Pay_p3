@@ -29,7 +29,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public ProfileResponse getMyProfile(String email) {
-        User user = getUserByEmail(email);
+        User user = findUserByEmail(email);
         return mapToProfileResponse(user);
     }
 
@@ -42,8 +42,15 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    public UserDto getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return new UserDto(user.getId(), user.getFullName(), user.getEmail());
+    }
+
+    @Override
     public ProfileResponse updateMyProfile(String email, UpdateProfileRequest request) {
-        User user = getUserByEmail(email);
+        User user = findUserByEmail(email);
 
         if (request.getFullName() != null && !request.getFullName().isBlank()) {
             user.setFullName(request.getFullName());
@@ -59,7 +66,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public String setPin(String email, SetPinRequest request) {
-        User user = getUserByEmail(email);
+        User user = findUserByEmail(email);
 
         if (user.getPinHash() != null && !user.getPinHash().isBlank()) {
             throw new RuntimeException("PIN already set");
@@ -73,7 +80,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public String changePin(String email, ChangePinRequest request) {
-        User user = getUserByEmail(email);
+        User user = findUserByEmail(email);
 
         if (user.getPinHash() == null || user.getPinHash().isBlank()) {
             throw new RuntimeException("PIN not set");
@@ -91,7 +98,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public String changePassword(String email, ChangePasswordRequest request) {
-        User user = getUserByEmail(email);
+        User user = findUserByEmail(email);
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Old password is incorrect");
@@ -103,7 +110,7 @@ public class ProfileServiceImpl implements ProfileService {
         return "Password changed successfully";
     }
 
-    private User getUserByEmail(String email) {
+    private User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }

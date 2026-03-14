@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.revpay.transactionservice.client.UserClient.UserClient;
 import com.revpay.transactionservice.dto.request.CreateMoneyRequestDto;
 import com.revpay.transactionservice.dto.request.SendMoneyRequest;
 import com.revpay.transactionservice.dto.request.InternalTransactionRequest;
@@ -17,15 +18,33 @@ import com.revpay.transactionservice.service.TransactionService;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final UserClient userClient;
 
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService, UserClient userClient) {
         this.transactionService = transactionService;
+        this.userClient = userClient;
     }
 
     @PostMapping("/api/transfer/send")
     public TransactionResponse sendMoney(Authentication authentication,
                                          @RequestBody SendMoneyRequest request) {
         Long currentUserId = extractUserId(authentication);
+
+        // Resolve receiver: if receiverUserId not already set, look up by email
+        if (request.getReceiverUserId() == null && request.getTo() != null && !request.getTo().isBlank()) {
+            try {
+                UserClient.UserLookupResponse receiver = userClient.getUserByEmail(request.getTo());
+                request.setReceiverUserId(receiver.resolvedId());
+            } catch (Exception e) {
+                throw new RuntimeException("Receiver not found for email: " + request.getTo());
+            }
+        }
+
+        // Map note → description if description is blank
+        if ((request.getDescription() == null || request.getDescription().isBlank()) && request.getNote() != null) {
+            request.setDescription(request.getNote());
+        }
+
         return transactionService.sendMoney(currentUserId, request);
     }
 
