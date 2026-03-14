@@ -31,7 +31,7 @@ export class SidebarComponent implements OnInit {
     private profileService: ProfileService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.role = this.auth.getRole();
@@ -61,7 +61,7 @@ export class SidebarComponent implements OnInit {
 
   get isBusiness(): boolean {
     return this.role === 'ROLE_BUSINESS' ||
-           localStorage.getItem('accountType') === 'BUSINESS';
+      localStorage.getItem('accountType') === 'BUSINESS';
   }
 
   toggleProfileMenu() {

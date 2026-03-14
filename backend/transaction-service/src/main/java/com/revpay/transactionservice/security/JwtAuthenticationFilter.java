@@ -48,11 +48,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     && SecurityContextHolder.getContext().getAuthentication() == null
                     && jwtService.validateToken(token, username)) {
 
+                var authorities = role != null ? 
+                    Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)) :
+                    Collections.<org.springframework.security.core.authority.SimpleGrantedAuthority>emptyList();
+
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 username,
                                 null,
-                                Collections.emptyList()
+                                authorities
                         );
 
                 Map<String, Object> details = new HashMap<>();

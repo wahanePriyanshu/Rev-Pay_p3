@@ -67,12 +67,14 @@
             </div>
 
             <div *ngIf="transactions().length; else noTransactions">
-              <div *ngFor="let tx of transactions() | slice:0:5" class="transaction-row d-flex align-items-center py-2 border-bottom">
+              <div *ngFor="let tx of transactions() | slice:0:5"
+                class="transaction-row d-flex align-items-center py-2 border-bottom">
                 <div class="me-3">
                   <span class="rounded-circle d-flex justify-content-center align-items-center"
                     [ngClass]="tx.type === 'credit' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
                     style="width:36px;height:36px;font-size:1rem;">
-                    <i class="ti" [ngClass]="tx.type === 'credit' ? 'ti-arrow-down' : 'ti-arrow-up'" style="font-size:1rem;"></i>
+                    <i class="ti" [ngClass]="tx.type === 'credit' ? 'ti-arrow-down' : 'ti-arrow-up'"
+                      style="font-size:1rem;"></i>
                   </span>
                 </div>
                 <div class="flex-grow-1">
@@ -107,17 +109,11 @@
 
             <div *ngIf="favoriteUsers.length; else noUsers">
               <div class="list-group">
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action d-flex align-items-center"
-                  *ngFor="let user of favoriteUsers | slice:0:6"
-                  (click)="onSendMoney(user)"
-                >
-                  <div
-                    class="avatar rounded-circle d-flex justify-content-center align-items-center me-3 text-white"
+                <button type="button" class="list-group-item list-group-item-action d-flex align-items-center"
+                  *ngFor="let user of favoriteUsers | slice:0:6" (click)="onSendMoney(user)">
+                  <div class="avatar rounded-circle d-flex justify-content-center align-items-center me-3 text-white"
                     [ngStyle]="{ 'background-color': user.avatarColor }"
-                    style="width:38px;height:38px;font-size:0.85rem;font-weight:600;"
-                  >
+                    style="width:38px;height:38px;font-size:0.85rem;font-weight:600;">
                     {{ getInitials(user.name) }}
                   </div>
                   <div class="flex-grow-1">
@@ -228,7 +224,8 @@
                   <span class="rounded-circle d-flex justify-content-center align-items-center"
                     [ngClass]="tx.type === 'credit' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
                     style="width:36px;height:36px;font-size:1rem;">
-                    <i class="ti" [ngClass]="tx.type === 'credit' ? 'ti-arrow-down' : 'ti-arrow-up'" style="font-size:1rem;"></i>
+                    <i class="ti" [ngClass]="tx.type === 'credit' ? 'ti-arrow-down' : 'ti-arrow-up'"
+                      style="font-size:1rem;"></i>
                   </span>
                 </div>
                 <div class="flex-grow-1">
@@ -276,7 +273,8 @@
                 <i class="ti ti-chart-bar"></i> <strong>Transaction Report</strong>
                 <span class="ms-auto small text-muted">View <i class="ti ti-chevron-right"></i></span>
               </a>
-              <a routerLink="/notifications" class="btn btn-outline-secondary text-start d-flex align-items-center gap-2">
+              <a routerLink="/notifications"
+                class="btn btn-outline-secondary text-start d-flex align-items-center gap-2">
                 <i class="ti ti-bell"></i> <strong>Notifications</strong>
                 <span class="ms-auto small text-muted">Check <i class="ti ti-chevron-right"></i></span>
               </a>
@@ -295,17 +293,12 @@
             <h5 class="card-title mb-3">Send Money to Customers</h5>
             <div *ngIf="favoriteUsers.length; else noUsersB">
               <div class="d-flex flex-wrap gap-2">
-                <button
-                  *ngFor="let user of favoriteUsers | slice:0:8"
-                  type="button"
-                  class="btn btn-outline-primary d-flex align-items-center gap-2"
-                  (click)="onSendMoney(user)"
-                >
-                  <span
-                    class="rounded-circle d-inline-flex justify-content-center align-items-center text-white"
+                <button *ngFor="let user of favoriteUsers | slice:0:8" type="button"
+                  class="btn btn-outline-primary d-flex align-items-center gap-2" (click)="onSendMoney(user)">
+                  <span class="rounded-circle d-inline-flex justify-content-center align-items-center text-white"
                     [ngStyle]="{ 'background-color': user.avatarColor }"
-                    style="width:28px;height:28px;font-size:0.75rem;font-weight:600;"
-                  >{{ getInitials(user.name) }}</span>
+                    style="width:28px;height:28px;font-size:0.75rem;font-weight:600;">{{ getInitials(user.name)
+                    }}</span>
                   {{ user.name }}
                 </button>
               </div>
@@ -359,23 +352,11 @@
       <label class="modal-field-label">Enter Amount</label>
       <div class="amount-input-wrap">
         <span class="currency-prefix">₹</span>
-        <input
-          type="number"
-          class="amount-input"
-          placeholder="0.00"
-          [(ngModel)]="sendAmount"
-          min="1"
-          autofocus
-        >
+        <input type="number" class="amount-input" placeholder="0.00" [(ngModel)]="sendAmount" min="1" autofocus>
       </div>
 
       <label class="modal-field-label mt-3">Note <span class="optional-tag">(optional)</span></label>
-      <textarea
-        class="note-input"
-        placeholder="Add a note (optional)"
-        [(ngModel)]="sendNote"
-        rows="2"
-      ></textarea>
+      <textarea class="note-input" placeholder="Add a note (optional)" [(ngModel)]="sendNote" rows="2"></textarea>
 
       <p class="balance-hint">
         Remaining Balance:
@@ -402,17 +383,13 @@
     </div>
 
     <div class="modal-body-pad">
-      <p class="pin-desc">Confirm sending <strong>₹{{ sendAmount }}</strong> to <strong>{{ selectedSendUser?.name }}</strong></p>
+      <p class="pin-desc">Confirm sending <strong>₹{{ sendAmount }}</strong> to <strong>{{ selectedSendUser?.name
+          }}</strong></p>
 
       <label class="modal-field-label">Transaction PIN</label>
       <div class="pin-input-wrap">
-        <input
-          [type]="showSendPin ? 'text' : 'password'"
-          class="amount-input"
-          placeholder="Enter PIN"
-          [(ngModel)]="sendPin"
-          maxlength="6"
-        >
+        <input [type]="showSendPin ? 'text' : 'password'" class="amount-input" placeholder="Enter PIN"
+          [(ngModel)]="sendPin" maxlength="6">
         <button class="pin-eye-btn" type="button" (click)="showSendPin = !showSendPin">
           <i class="ti" [ngClass]="showSendPin ? 'ti-eye-off' : 'ti-eye'"></i>
         </button>

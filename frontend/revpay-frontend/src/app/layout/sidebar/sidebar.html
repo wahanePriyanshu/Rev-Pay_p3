@@ -1,5 +1,4 @@
-<div class="sidebar sidebar-dark sidebar-fixed"
-     [ngClass]="{'sidebar-hide': !isOpen}">
+<div class="sidebar sidebar-dark sidebar-fixed" [ngClass]="{'sidebar-hide': !isOpen}">
 
   <div class="sidebar-content">
     <ul class="sidebar-nav">
@@ -12,10 +11,8 @@
       </li>
 
       <li class="nav-item">
-        <a class="nav-link"
-           [routerLink]="['/wallet']"
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{ exact: true }">
+        <a class="nav-link" [routerLink]="['/wallet']" routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
           <i class="ti ti-wallet nav-icon"></i>
           Wallet
         </a>

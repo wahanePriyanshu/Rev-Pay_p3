@@ -2,8 +2,9 @@ package com.revpay.loanservice.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.revpay.loanservice.enums.LoanStatus;
 import com.revpay.loanservice.enums.LoanType;
@@ -58,10 +59,10 @@ public class LoanApplication extends BaseEntity {
 	private LocalDateTime closedAt;
 
 	@OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<LoanDocument> documents = new ArrayList<>();
+	private Set<LoanDocument> documents = new LinkedHashSet<>();
 
 	@OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<LoanRepayment> repayments = new ArrayList<>();
+	private Set<LoanRepayment> repayments = new LinkedHashSet<>();
 
 	public Long getId() {
 		return id;
@@ -179,19 +180,19 @@ public class LoanApplication extends BaseEntity {
 		this.closedAt = closedAt;
 	}
 
-	public List<LoanDocument> getDocuments() {
+	public Set<LoanDocument> getDocuments() {
 		return documents;
 	}
 
-	public void setDocuments(List<LoanDocument> documents) {
+	public void setDocuments(Set<LoanDocument> documents) {
 		this.documents = documents;
 	}
 
-	public List<LoanRepayment> getRepayments() {
+	public Set<LoanRepayment> getRepayments() {
 		return repayments;
 	}
 
-	public void setRepayments(List<LoanRepayment> repayments) {
+	public void setRepayments(Set<LoanRepayment> repayments) {
 		this.repayments = repayments;
 	}
 }

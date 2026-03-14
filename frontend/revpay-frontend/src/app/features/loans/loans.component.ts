@@ -29,7 +29,7 @@ export class LoansComponent implements OnInit {
   repaying = false;
 
   // Loan type options (from backend enum)
-  loanTypes = ['PERSONAL', 'BUSINESS', 'HOME', 'AUTO', 'EDUCATION', 'MEDICAL'];
+  loanTypes = ['BUSINESS', 'WORKING_CAPITAL', 'EQUIPMENT', 'EXPANSION', 'PERSONAL', 'HOME', 'AUTO', 'EDUCATION', 'MEDICAL'];
 
   constructor(
     private loanService: LoanService,

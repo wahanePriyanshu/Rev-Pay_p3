@@ -4,5 +4,10 @@ public enum LoanType {
     BUSINESS,
     WORKING_CAPITAL,
     EQUIPMENT,
-    EXPANSION
+    EXPANSION,
+    PERSONAL,
+    HOME,
+    AUTO,
+    EDUCATION,
+    MEDICAL
 }

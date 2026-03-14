@@ -73,8 +73,15 @@
   animation: modalFadeIn 0.2s ease;
 
   @keyframes modalFadeIn {
-    from { opacity: 0; transform: translate(-50%, -48%); }
-    to   { opacity: 1; transform: translate(-50%, -50%); }
+    from {
+      opacity: 0;
+      transform: translate(-50%, -48%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
   }
 }
 
@@ -102,7 +109,9 @@
   line-height: 1;
   transition: color 0.15s;
 
-  &:hover { color: #333; }
+  &:hover {
+    color: #333;
+  }
 }
 
 .back-btn {
@@ -114,7 +123,9 @@
   padding: 0;
   font-weight: 500;
 
-  &:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .modal-recipient {
@@ -176,7 +187,9 @@
   overflow: hidden;
   transition: border-color 0.15s;
 
-  &:focus-within { border-color: #4e73df; }
+  &:focus-within {
+    border-color: #4e73df;
+  }
 }
 
 .currency-prefix {
@@ -201,7 +214,10 @@
   height: 48px;
   background: #fff;
 
-  &::placeholder { font-weight: 400; color: #bbb; }
+  &::placeholder {
+    font-weight: 400;
+    color: #bbb;
+  }
 }
 
 .note-input {
@@ -214,7 +230,9 @@
   outline: none;
   transition: border-color 0.15s;
 
-  &:focus { border-color: #4e73df; }
+  &:focus {
+    border-color: #4e73df;
+  }
 }
 
 .balance-hint {
@@ -242,7 +260,9 @@
   cursor: pointer;
   transition: all 0.15s;
 
-  &:hover { background: #f5f6fa; }
+  &:hover {
+    background: #f5f6fa;
+  }
 }
 
 .btn-modal-primary {
@@ -261,8 +281,16 @@
   justify-content: center;
   gap: 0.4rem;
 
-  &:hover { background: linear-gradient(135deg, #3a5ac8, #1a3894); transform: translateY(-1px); }
-  &:disabled { opacity: 0.65; transform: none; cursor: not-allowed; }
+  &:hover {
+    background: linear-gradient(135deg, #3a5ac8, #1a3894);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    transform: none;
+    cursor: not-allowed;
+  }
 }
 
 .pin-desc {
@@ -279,7 +307,9 @@
   overflow: hidden;
   transition: border-color 0.15s;
 
-  &:focus-within { border-color: #4e73df; }
+  &:focus-within {
+    border-color: #4e73df;
+  }
 }
 
 .pin-eye-btn {
@@ -292,7 +322,9 @@
   font-size: 1rem;
   transition: background 0.15s;
 
-  &:hover { background: #eaedf5; }
+  &:hover {
+    background: #eaedf5;
+  }
 }
 
 // Success state
@@ -325,8 +357,14 @@
   }
 
   @keyframes popIn {
-    0%   { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
 }
-
