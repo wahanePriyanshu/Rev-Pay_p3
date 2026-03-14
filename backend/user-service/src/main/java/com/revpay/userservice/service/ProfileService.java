@@ -5,9 +5,12 @@ import com.revpay.userservice.dto.request.ChangePinRequest;
 import com.revpay.userservice.dto.request.SetPinRequest;
 import com.revpay.userservice.dto.request.UpdateProfileRequest;
 import com.revpay.userservice.dto.response.ProfileResponse;
+import com.revpay.userservice.dto.response.UserDto;
+import java.util.List;
 
 public interface ProfileService {
     ProfileResponse getMyProfile(String email);
+    List<UserDto> getAllUsers(String currentEmail);
     ProfileResponse updateMyProfile(String email, UpdateProfileRequest request);
     String setPin(String email, SetPinRequest request);
     String changePin(String email, ChangePinRequest request);

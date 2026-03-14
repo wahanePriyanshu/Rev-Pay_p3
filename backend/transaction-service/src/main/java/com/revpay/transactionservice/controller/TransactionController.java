@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.revpay.transactionservice.dto.request.CreateMoneyRequestDto;
 import com.revpay.transactionservice.dto.request.SendMoneyRequest;
+import com.revpay.transactionservice.dto.request.InternalTransactionRequest;
 import com.revpay.transactionservice.dto.response.MoneyRequestResponse;
 import com.revpay.transactionservice.dto.response.TransactionResponse;
 import com.revpay.transactionservice.service.TransactionService;
@@ -26,6 +27,11 @@ public class TransactionController {
                                          @RequestBody SendMoneyRequest request) {
         Long currentUserId = extractUserId(authentication);
         return transactionService.sendMoney(currentUserId, request);
+    }
+
+    @PostMapping("/api/transactions/internal/create")
+    public void createInternalTransaction(@RequestBody InternalTransactionRequest request) {
+        transactionService.createInternalTransaction(request);
     }
 
     @PostMapping("/api/requests")

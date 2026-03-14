@@ -14,6 +14,7 @@ import com.revpay.walletservice.entity.Wallet;
 import com.revpay.walletservice.repository.WalletRepository;
 import com.revpay.walletservice.service.WalletService;
 import com.revpay.walletservice.client.NotificationClient.*;
+import com.revpay.walletservice.client.TransactionClient.TransactionClient;
 
 @Service
 public class WalletServiceImpl implements WalletService {
@@ -21,10 +22,12 @@ public class WalletServiceImpl implements WalletService {
 	private final WalletRepository walletRepository;
 
 	private final NotificationClient notificationClient;
+	private final TransactionClient transactionClient;
 
-	public WalletServiceImpl(WalletRepository walletRepository, NotificationClient notificationClient) {
+	public WalletServiceImpl(WalletRepository walletRepository, NotificationClient notificationClient, TransactionClient transactionClient) {
 		this.walletRepository = walletRepository;
 		this.notificationClient = notificationClient;
+		this.transactionClient = transactionClient;
 	}
 
 	@Override
@@ -56,6 +59,13 @@ public class WalletServiceImpl implements WalletService {
 		createNotification(userId, "Money added", "₹" + request.getAmount() + " was added to your wallet",
 				"TRANSACTION", "WALLET", saved.getId());
 
+		TransactionClient.CreateTransactionRequest txRequest = new TransactionClient.CreateTransactionRequest();
+		txRequest.setUserId(userId);
+		txRequest.setAmount(request.getAmount());
+		txRequest.setType("ADD_MONEY");
+		txRequest.setDescription("Added money to wallet");
+		transactionClient.createTransaction(txRequest);
+
 		return mapToWalletResponse(saved);
 	}
 
@@ -79,6 +89,13 @@ public class WalletServiceImpl implements WalletService {
 			createNotification(userId, "Low balance alert", "Your wallet balance is low: ₹" + saved.getBalance(),
 					"LOW_BALANCE", "WALLET", saved.getId());
 		}
+
+		TransactionClient.CreateTransactionRequest txRequest = new TransactionClient.CreateTransactionRequest();
+		txRequest.setUserId(userId);
+		txRequest.setAmount(request.getAmount());
+		txRequest.setType("WITHDRAW");
+		txRequest.setDescription("Withdrawn to bank");
+		transactionClient.createTransaction(txRequest);
 
 		return mapToWalletResponse(saved);
 	}

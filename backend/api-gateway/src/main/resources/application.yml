@@ -46,6 +46,42 @@ spring:
           uri: http://localhost:8083
           predicates:
             - Path=/api/transfer/**,/api/requests/**,/api/transactions/**
+
+        - id: invoice-service-docs
+          uri: http://localhost:8084
+          predicates:
+            - Path=/invoice-service/**
+          filters:
+            - RewritePath=/invoice-service/(?<segment>.*), /${segment}
+
+        - id: invoice-service-api
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/invoices/**
+
+        - id: notification-service-docs
+          uri: http://localhost:8085
+          predicates:
+            - Path=/notification-service/**
+          filters:
+            - RewritePath=/notification-service/(?<segment>.*), /${segment}
+
+        - id: notification-service-api
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/notifications/**
+
+        - id: loan-service-docs
+          uri: http://localhost:8086
+          predicates:
+            - Path=/loan-service/**
+          filters:
+            - RewritePath=/loan-service/(?<segment>.*), /${segment}
+
+        - id: loan-service-api
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/loans/**
             
 
 eureka:
@@ -62,3 +98,9 @@ springdoc:
         url: /wallet-service/v3/api-docs
       - name: transaction-service
         url: /transaction-service/v3/api-docs
+      - name: invoice-service
+        url: /invoice-service/v3/api-docs
+      - name: notification-service
+        url: /notification-service/v3/api-docs
+      - name: loan-service
+        url: /loan-service/v3/api-docs

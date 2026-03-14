@@ -1,6 +1,7 @@
 package com.revpay.userservice.controller;
 
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import com.revpay.userservice.dto.request.ChangePinRequest;
 import com.revpay.userservice.dto.request.SetPinRequest;
 import com.revpay.userservice.dto.request.UpdateProfileRequest;
 import com.revpay.userservice.dto.response.ProfileResponse;
+import com.revpay.userservice.dto.response.UserDto;
 import com.revpay.userservice.service.ProfileService;
 
 @RestController
@@ -27,6 +29,11 @@ public class ProfileController {
     @GetMapping("/api/profile")
     public ProfileResponse getMyProfile(Principal principal) {
         return profileService.getMyProfile(principal.getName());
+    }
+
+    @GetMapping("/api/users")
+    public List<UserDto> getAllUsers(Principal principal) {
+        return profileService.getAllUsers(principal.getName());
     }
 
     @PutMapping("/api/profile")

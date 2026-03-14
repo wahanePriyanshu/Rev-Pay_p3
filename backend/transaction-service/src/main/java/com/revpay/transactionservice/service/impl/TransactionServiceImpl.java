@@ -7,8 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.revpay.transactionservice.client.WalletClient;
 import com.revpay.transactionservice.client.NotificationClient.NotificationClient;
-import com.revpay.transactionservice.dto.request.CreateMoneyRequestDto;
 import com.revpay.transactionservice.dto.request.SendMoneyRequest;
+import com.revpay.transactionservice.dto.request.CreateMoneyRequestDto;
+import com.revpay.transactionservice.dto.request.InternalTransactionRequest;
 import com.revpay.transactionservice.dto.response.MoneyRequestResponse;
 import com.revpay.transactionservice.dto.response.TransactionResponse;
 import com.revpay.transactionservice.entity.MoneyRequest;
@@ -79,6 +80,19 @@ public class TransactionServiceImpl implements TransactionService {
 				saved.getId());
 
 		return mapToTransactionResponse(saved);
+	}
+
+	@Override
+	public void createInternalTransaction(InternalTransactionRequest request) {
+		Transaction transaction = new Transaction();
+		transaction.setTransactionRef(generateTransactionRef());
+		transaction.setSenderUserId(request.getUserId());
+		transaction.setReceiverUserId(request.getUserId());
+		transaction.setAmount(request.getAmount());
+		transaction.setStatus("SUCCESS");
+		transaction.setType(request.getType());
+		transaction.setDescription(request.getDescription());
+		transactionRepository.save(transaction);
 	}
 
 	@Override

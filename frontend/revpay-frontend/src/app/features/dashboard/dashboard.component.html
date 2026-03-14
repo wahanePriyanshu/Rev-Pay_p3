@@ -1,0 +1,329 @@
+<div class="dashboard">
+
+  <!-- ===== Header ===== -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Welcome back, {{ userName }}
+        <span *ngIf="isBusiness" class="badge bg-primary ms-2 fs-6">Business</span>
+        <span *ngIf="isPersonal" class="badge bg-success ms-2 fs-6">Personal</span>
+      </h2>
+      <p class="text-muted mb-0">{{ userEmail }}</p>
+    </div>
+  </div>
+
+  <!-- ===== Top Stats Row (common to both) ===== -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="card-title mb-0">Wallet Balance</h5>
+            <span class="badge bg-success">Active</span>
+          </div>
+          <p class="display-6 fw-semibold mb-2">{{ formattedBalance }}</p>
+          <p class="text-muted mb-0 small">Last updated: Today</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title mb-2">
+            {{ isBusiness ? 'Revenue (30 days)' : 'Total Received' }}
+          </h5>
+          <p class="h3 text-success mb-1">+ {{ formattedTotalReceived }}</p>
+          <p class="text-muted small mb-0">In the last 30 days</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title mb-2">
+            {{ isBusiness ? 'Total Paid Out' : 'Total Sent' }}
+          </h5>
+          <p class="h3 text-danger mb-1">- {{ formattedTotalSent }}</p>
+          <p class="text-muted small mb-0">In the last 30 days</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== -->
+  <!-- PERSONAL DASHBOARD     -->
+  <!-- ====================== -->
+  <ng-container *ngIf="isPersonal">
+    <div class="row g-3">
+
+      <!-- Recent Transactions -->
+      <div class="col-lg-8">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="card-title mb-0">Recent Transactions</h5>
+              <a class="small text-primary" routerLink="/transactions">View all</a>
+            </div>
+
+            <div *ngIf="transactions().length; else noTransactions">
+              <div *ngFor="let tx of transactions() | slice:0:5" class="transaction-row d-flex align-items-center py-2 border-bottom">
+                <div class="me-3">
+                  <span class="rounded-circle d-flex justify-content-center align-items-center"
+                    [ngClass]="tx.type === 'credit' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+                    style="width:36px;height:36px;font-size:1rem;">
+                    {{ tx.type === 'credit' ? '↓' : '↑' }}
+                  </span>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <span class="fw-semibold">{{ tx.description }}</span>
+                    <span class="fw-semibold"
+                      [ngClass]="{ 'text-success': tx.amount > 0, 'text-danger': tx.amount < 0 }">
+                      {{ tx.amount > 0 ? '+' : '' }}{{ tx.amount | currency:'INR':'symbol':'1.2-2' }}
+                    </span>
+                  </div>
+                  <div class="d-flex justify-content-between small text-muted">
+                    <span>{{ tx.id }}</span>
+                    <span>{{ tx.date }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noTransactions>
+              <p class="text-muted mb-0">No transactions yet.</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Send Money - Quick Access -->
+      <div class="col-lg-4">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Send Money</h5>
+            <p class="text-muted small">Quick access to your contacts. Click to send.</p>
+
+            <div *ngIf="favoriteUsers.length; else noUsers">
+              <div class="list-group">
+                <button
+                  type="button"
+                  class="list-group-item list-group-item-action d-flex align-items-center"
+                  *ngFor="let user of favoriteUsers | slice:0:6"
+                  (click)="onSendMoney(user)"
+                >
+                  <div
+                    class="avatar rounded-circle d-flex justify-content-center align-items-center me-3 text-white"
+                    [ngStyle]="{ 'background-color': user.avatarColor }"
+                    style="width:38px;height:38px;font-size:0.85rem;font-weight:600;"
+                  >
+                    {{ getInitials(user.name) }}
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="fw-semibold">{{ user.name }}</div>
+                    <div class="small text-muted">{{ user.email }}</div>
+                  </div>
+                  <span class="text-primary small fw-semibold">Send →</span>
+                </button>
+              </div>
+            </div>
+            <ng-template #noUsers>
+              <p class="text-muted small">No other users available.</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Personal Quick Actions row -->
+    <div class="row g-3 mt-2">
+      <div class="col-12">
+        <div class="card shadow-sm border-0">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Quick Actions</h5>
+            <div class="d-flex flex-wrap gap-2">
+              <a routerLink="/wallet" class="btn btn-outline-primary">
+                💸 Add Money
+              </a>
+              <a routerLink="/wallet" class="btn btn-outline-success">
+                ↓ Withdraw
+              </a>
+              <a routerLink="/wallet" class="btn btn-outline-info">
+                🔁 Request Money
+              </a>
+              <a routerLink="/transactions" class="btn btn-outline-secondary">
+                📋 Transaction History
+              </a>
+              <a routerLink="/notifications" class="btn btn-outline-warning">
+                🔔 Notifications
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ====================== -->
+  <!-- BUSINESS DASHBOARD     -->
+  <!-- ====================== -->
+  <ng-container *ngIf="isBusiness">
+
+    <!-- Business KPI Row -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-primary border-3">
+          <div class="card-body">
+            <div class="small text-muted text-uppercase fw-bold mb-1">Revenue (30d)</div>
+            <div class="h4 fw-bold text-primary mb-0">{{ formattedRevenue }}</div>
+            <small class="text-muted">From received payments</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-warning border-3">
+          <div class="card-body">
+            <div class="small text-muted text-uppercase fw-bold mb-1">Pending Invoices</div>
+            <div class="h4 fw-bold text-warning mb-0">{{ pendingInvoices }}</div>
+            <small class="text-muted"><a routerLink="/invoices" class="text-warning">View all →</a></small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-danger border-3">
+          <div class="card-body">
+            <div class="small text-muted text-uppercase fw-bold mb-1">Active Loans</div>
+            <div class="h4 fw-bold text-danger mb-0">{{ activeLoanCount }}</div>
+            <small class="text-muted"><a routerLink="/loans" class="text-danger">Manage →</a></small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-success border-3">
+          <div class="card-body">
+            <div class="small text-muted text-uppercase fw-bold mb-1">Transaction Count</div>
+            <div class="h4 fw-bold text-success mb-0">{{ transactions().length }}</div>
+            <small class="text-muted">Total recorded</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+
+      <!-- Recent Transactions (Business) -->
+      <div class="col-lg-8">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="card-title mb-0">Recent Transactions</h5>
+              <a class="small text-primary" routerLink="/transactions">View all</a>
+            </div>
+
+            <div *ngIf="transactions().length; else noTxBusiness">
+              <div *ngFor="let tx of transactions() | slice:0:6" class="d-flex align-items-center py-2 border-bottom">
+                <div class="me-3">
+                  <span class="rounded-circle d-flex justify-content-center align-items-center"
+                    [ngClass]="tx.type === 'credit' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+                    style="width:36px;height:36px;font-size:1rem;">
+                    {{ tx.type === 'credit' ? '↓' : '↑' }}
+                  </span>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <span class="fw-semibold">{{ tx.description }}</span>
+                    <span class="fw-semibold"
+                      [ngClass]="{ 'text-success': tx.amount > 0, 'text-danger': tx.amount < 0 }">
+                      {{ tx.amount > 0 ? '+' : '' }}{{ tx.amount | currency:'INR':'symbol':'1.2-2' }}
+                    </span>
+                  </div>
+                  <div class="d-flex justify-content-between small text-muted">
+                    <span>{{ tx.id }}</span>
+                    <span>{{ tx.date }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noTxBusiness>
+              <p class="text-muted mb-0">No transactions yet.</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business Quick Actions -->
+      <div class="col-lg-4">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Business Tools</h5>
+            <div class="d-grid gap-2">
+              <a routerLink="/invoices" class="btn btn-outline-primary text-start">
+                🧾 <strong>Invoices</strong>
+                <span class="float-end small text-muted">Manage ›</span>
+              </a>
+              <a routerLink="/loans" class="btn btn-outline-warning text-start">
+                🏦 <strong>Loan Applications</strong>
+                <span class="float-end small text-muted">Apply ›</span>
+              </a>
+              <a routerLink="/wallet" class="btn btn-outline-success text-start">
+                💼 <strong>Accept Payments</strong>
+                <span class="float-end small text-muted">Wallet ›</span>
+              </a>
+              <a routerLink="/transactions" class="btn btn-outline-info text-start">
+                📊 <strong>Transaction Report</strong>
+                <span class="float-end small text-muted">View ›</span>
+              </a>
+              <a routerLink="/notifications" class="btn btn-outline-secondary text-start">
+                🔔 <strong>Notifications</strong>
+                <span class="float-end small text-muted">Check ›</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Business send money -->
+    <div class="row g-3 mt-2">
+      <div class="col-12">
+        <div class="card shadow-sm border-0">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Send Money to Customers</h5>
+            <div *ngIf="favoriteUsers.length; else noUsersB">
+              <div class="d-flex flex-wrap gap-2">
+                <button
+                  *ngFor="let user of favoriteUsers | slice:0:8"
+                  type="button"
+                  class="btn btn-outline-primary d-flex align-items-center gap-2"
+                  (click)="onSendMoney(user)"
+                >
+                  <span
+                    class="rounded-circle d-inline-flex justify-content-center align-items-center text-white"
+                    [ngStyle]="{ 'background-color': user.avatarColor }"
+                    style="width:28px;height:28px;font-size:0.75rem;font-weight:600;"
+                  >{{ getInitials(user.name) }}</span>
+                  {{ user.name }}
+                </button>
+              </div>
+            </div>
+            <ng-template #noUsersB>
+              <p class="text-muted small mb-0">No customers found.</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- Fallback while accountType loads -->
+  <div *ngIf="!isPersonal && !isBusiness" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2">Loading your dashboard…</p>
+  </div>
+
+</div>

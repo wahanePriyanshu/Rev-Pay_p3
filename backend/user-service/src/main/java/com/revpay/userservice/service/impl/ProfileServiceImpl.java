@@ -8,6 +8,9 @@ import com.revpay.userservice.dto.request.ChangePinRequest;
 import com.revpay.userservice.dto.request.SetPinRequest;
 import com.revpay.userservice.dto.request.UpdateProfileRequest;
 import com.revpay.userservice.dto.response.ProfileResponse;
+import com.revpay.userservice.dto.response.UserDto;
+import java.util.stream.Collectors;
+import java.util.List;
 import com.revpay.userservice.entity.User;
 import com.revpay.userservice.repository.UserRepository;
 import com.revpay.userservice.service.ProfileService;
@@ -28,6 +31,14 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileResponse getMyProfile(String email) {
         User user = getUserByEmail(email);
         return mapToProfileResponse(user);
+    }
+
+    @Override
+    public List<UserDto> getAllUsers(String currentEmail) {
+        return userRepository.findAll().stream()
+                .filter(u -> !u.getEmail().equals(currentEmail))
+                .map(u -> new UserDto(u.getId(), u.getFullName(), u.getEmail()))
+                .collect(Collectors.toList());
     }
 
     @Override

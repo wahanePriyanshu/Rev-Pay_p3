@@ -1,0 +1,50 @@
+.dashboard {
+  .card {
+    border-radius: 0.75rem;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .transaction-row {
+    transition: background 0.15s;
+    border-radius: 0.5rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+
+    &:hover {
+      background: #f8f9fa;
+    }
+  }
+
+  // Business KPI left border cards
+  .border-start.border-3 {
+    border-left-width: 4px !important;
+  }
+
+  // Quick action buttons row
+  .btn-outline-primary,
+  .btn-outline-success,
+  .btn-outline-info,
+  .btn-outline-warning,
+  .btn-outline-secondary {
+    border-radius: 0.5rem;
+  }
+
+  // Top stat badge
+  .badge.fs-6 {
+    font-size: 0.65rem !important;
+    vertical-align: middle;
+    padding: 0.25em 0.55em;
+    border-radius: 999px;
+  }
+}
