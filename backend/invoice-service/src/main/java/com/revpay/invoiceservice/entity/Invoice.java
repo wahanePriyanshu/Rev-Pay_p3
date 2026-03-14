@@ -10,7 +10,10 @@ import com.revpay.invoiceservice.enums.InvoiceStatus;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "invoices")
+@Table(name = "invoices", indexes = {
+    @Index(name = "idx_owner_user", columnList = "owner_user_id"),
+    @Index(name = "idx_created_at", columnList = "created_at DESC")
+})
 public class Invoice extends BaseEntity {
 
     @Id

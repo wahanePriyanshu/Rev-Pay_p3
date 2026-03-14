@@ -50,7 +50,8 @@
 
       <!-- Confirm Password -->
       <input formControlName="confirmPassword" type="password" placeholder="Confirm password" class="input" />
-      <div *ngIf="regiForm.controls['confirmPassword'].invalid && regiForm.controls['confirmPassword'].touched" class="error">
+      <div *ngIf="regiForm.controls['confirmPassword'].invalid && regiForm.controls['confirmPassword'].touched"
+        class="error">
         <small>Confirm password is required</small>
       </div>
 

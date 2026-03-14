@@ -1,4 +1,64 @@
 .loans-page {
-  max-width: 900px;
+  font-family: 'Inter', sans-serif;
 }
 
+.stat-box {
+  background: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  .label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: #94a3b8; }
+  .value { font-size: 1rem; font-weight: 800; }
+}
+
+.apply-card, .list-card {
+  border-radius: 16px;
+}
+
+.input-group-ti {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 10px;
+  i { color: #94a3b8; font-size: 1rem; }
+  .ti-input { flex: 1; border: none; background: transparent; padding: 8px; font-size: 0.9rem; outline: none; }
+}
+
+.ti-select {
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+}
+
+table {
+  th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; padding-top: 1rem !important; padding-bottom: 1rem !important; }
+}
+
+// ===== Drawer =====
+.repayments-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); z-index: 1060;
+}
+
+.repayments-drawer {
+  position: fixed; top: 0; right: -400px; width: 400px; height: 100vh;
+  background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+  z-index: 1061; transition: right 0.3s ease-out;
+  display: flex; flex-direction: column;
+  &.open { right: 0; }
+  @media (max-width: 450px) { width: 100%; right: -100%; }
+}
+
+.maxWidth-150 { max-width: 150px; }
+
+.edit-modal {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 90%; max-width: 400px; background: #fff; border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); z-index: 1071;
+}

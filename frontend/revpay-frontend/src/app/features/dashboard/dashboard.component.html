@@ -72,7 +72,7 @@
                   <span class="rounded-circle d-flex justify-content-center align-items-center"
                     [ngClass]="tx.type === 'credit' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
                     style="width:36px;height:36px;font-size:1rem;">
-                    {{ tx.type === 'credit' ? '↓' : '↑' }}
+                    <i class="ti" [ngClass]="tx.type === 'credit' ? 'ti-arrow-down' : 'ti-arrow-up'" style="font-size:1rem;"></i>
                   </span>
                 </div>
                 <div class="flex-grow-1">
@@ -144,20 +144,20 @@
           <div class="card-body">
             <h5 class="card-title mb-3">Quick Actions</h5>
             <div class="d-flex flex-wrap gap-2">
-              <a routerLink="/wallet" class="btn btn-outline-primary">
-                💸 Add Money
+              <a routerLink="/wallet" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+                <i class="ti ti-plus"></i> Add Money
               </a>
-              <a routerLink="/wallet" class="btn btn-outline-success">
-                ↓ Withdraw
+              <a routerLink="/wallet" class="btn btn-outline-success d-inline-flex align-items-center gap-2">
+                <i class="ti ti-arrow-down-circle"></i> Withdraw
               </a>
-              <a routerLink="/wallet" class="btn btn-outline-info">
-                🔁 Request Money
+              <a routerLink="/wallet" class="btn btn-outline-info d-inline-flex align-items-center gap-2">
+                <i class="ti ti-refresh"></i> Request Money
               </a>
-              <a routerLink="/transactions" class="btn btn-outline-secondary">
-                📋 Transaction History
+              <a routerLink="/transactions" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                <i class="ti ti-list"></i> Transaction History
               </a>
-              <a routerLink="/notifications" class="btn btn-outline-warning">
-                🔔 Notifications
+              <a routerLink="/notifications" class="btn btn-outline-warning d-inline-flex align-items-center gap-2">
+                <i class="ti ti-bell"></i> Notifications
               </a>
             </div>
           </div>
@@ -228,7 +228,7 @@
                   <span class="rounded-circle d-flex justify-content-center align-items-center"
                     [ngClass]="tx.type === 'credit' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
                     style="width:36px;height:36px;font-size:1rem;">
-                    {{ tx.type === 'credit' ? '↓' : '↑' }}
+                    <i class="ti" [ngClass]="tx.type === 'credit' ? 'ti-arrow-down' : 'ti-arrow-up'" style="font-size:1rem;"></i>
                   </span>
                 </div>
                 <div class="flex-grow-1">
@@ -260,25 +260,25 @@
           <div class="card-body">
             <h5 class="card-title mb-3">Business Tools</h5>
             <div class="d-grid gap-2">
-              <a routerLink="/invoices" class="btn btn-outline-primary text-start">
-                🧾 <strong>Invoices</strong>
-                <span class="float-end small text-muted">Manage ›</span>
+              <a routerLink="/invoices" class="btn btn-outline-primary text-start d-flex align-items-center gap-2">
+                <i class="ti ti-file-invoice"></i> <strong>Invoices</strong>
+                <span class="ms-auto small text-muted">Manage <i class="ti ti-chevron-right"></i></span>
               </a>
-              <a routerLink="/loans" class="btn btn-outline-warning text-start">
-                🏦 <strong>Loan Applications</strong>
-                <span class="float-end small text-muted">Apply ›</span>
+              <a routerLink="/loans" class="btn btn-outline-warning text-start d-flex align-items-center gap-2">
+                <i class="ti ti-building-bank"></i> <strong>Loan Applications</strong>
+                <span class="ms-auto small text-muted">Apply <i class="ti ti-chevron-right"></i></span>
               </a>
-              <a routerLink="/wallet" class="btn btn-outline-success text-start">
-                💼 <strong>Accept Payments</strong>
-                <span class="float-end small text-muted">Wallet ›</span>
+              <a routerLink="/wallet" class="btn btn-outline-success text-start d-flex align-items-center gap-2">
+                <i class="ti ti-circle-dashed-check"></i> <strong>Accept Payments</strong>
+                <span class="ms-auto small text-muted">Wallet <i class="ti ti-chevron-right"></i></span>
               </a>
-              <a routerLink="/transactions" class="btn btn-outline-info text-start">
-                📊 <strong>Transaction Report</strong>
-                <span class="float-end small text-muted">View ›</span>
+              <a routerLink="/transactions" class="btn btn-outline-info text-start d-flex align-items-center gap-2">
+                <i class="ti ti-chart-bar"></i> <strong>Transaction Report</strong>
+                <span class="ms-auto small text-muted">View <i class="ti ti-chevron-right"></i></span>
               </a>
-              <a routerLink="/notifications" class="btn btn-outline-secondary text-start">
-                🔔 <strong>Notifications</strong>
-                <span class="float-end small text-muted">Check ›</span>
+              <a routerLink="/notifications" class="btn btn-outline-secondary text-start d-flex align-items-center gap-2">
+                <i class="ti ti-bell"></i> <strong>Notifications</strong>
+                <span class="ms-auto small text-muted">Check <i class="ti ti-chevron-right"></i></span>
               </a>
             </div>
           </div>

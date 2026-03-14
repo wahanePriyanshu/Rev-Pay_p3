@@ -1,47 +1,153 @@
 <div class="customers-page">
-  <h2>Customers</h2>
 
-  <!-- Add Customer -->
-  <div class="card p-3 mb-3">
-    <h5>Add Customer</h5>
-    <div class="row g-2">
-      <div class="col">
-        <input class="form-control"
-               placeholder="Name"
-               [(ngModel)]="newCustomer.name">
-      </div>
-      <div class="col">
-        <input class="form-control"
-               placeholder="Email"
-               [(ngModel)]="newCustomer.email">
-      </div>
-      <!-- <div class="col">
-        <input class="form-control"
-               placeholder="Phone"
-               [(ngModel)]="newCustomer.phone">
-      </div> -->
-      <div class="col-auto">
-        <button class="btn btn-primary" (click)="addCustomer()">
-          Add
-        </button>
+  <!-- ===== Header ===== -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">
+      <i class="ti ti-users me-2 text-primary"></i> Customers
+    </h2>
+    <button class="btn btn-primary d-flex align-items-center gap-2"
+            (click)="showAddForm = !showAddForm">
+      <i class="ti ti-user-plus"></i>
+      {{ showAddForm ? 'Cancel' : 'Add Customer' }}
+    </button>
+  </div>
+
+  <!-- Error Banner -->
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+  <!-- ===== Add Customer Form (collapsible) ===== -->
+  <div class="card mb-3 add-card" *ngIf="showAddForm">
+    <div class="card-body">
+      <h6 class="card-title mb-3"><i class="ti ti-user-plus me-1"></i> New Customer</h6>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Full Name *</label>
+          <div class="input-group-ti">
+            <i class="ti ti-user"></i>
+            <input class="ti-input" type="text" placeholder="John Doe" [(ngModel)]="newCustomer.name">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Email *</label>
+          <div class="input-group-ti">
+            <i class="ti ti-mail"></i>
+            <input class="ti-input" type="email" placeholder="john@example.com" [(ngModel)]="newCustomer.email">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Address</label>
+          <div class="input-group-ti">
+            <i class="ti ti-map-pin"></i>
+            <input class="ti-input" type="text" placeholder="Street, City" [(ngModel)]="newCustomer.address">
+          </div>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button class="btn btn-primary w-100" (click)="addCustomer()" [disabled]="adding">
+            <span *ngIf="adding" class="spinner-border spinner-border-sm"></span>
+            <i *ngIf="!adding" class="ti ti-check"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Customer List -->
-  <div class="card">
-    <ul class="list-group list-group-flush">
-      <li *ngFor="let c of customers"
-          class="list-group-item d-flex justify-content-between">
-        <div>
-          <strong>{{ c.name }}</strong><br>
-          <small>{{ c.email }} </small>
+  <!-- ===== Search ===== -->
+  <div class="input-group mb-3">
+    <span class="input-group-text bg-white border-end-0">
+      <i class="ti ti-search text-muted"></i>
+    </span>
+    <input
+      type="text"
+      class="form-control border-start-0"
+      placeholder="Search by name, email, or address…"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="applySearch()"
+    >
+  </div>
+
+  <!-- ===== Customer Grid ===== -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="text-muted mt-2">Loading customers…</p>
+  </div>
+
+  <div *ngIf="!loading && filteredCustomers.length === 0" class="text-center py-5 text-muted">
+    <i class="ti ti-users-off" style="font-size:3rem;opacity:.35;display:block;margin-bottom:.75rem"></i>
+    No customers found.
+  </div>
+
+  <div class="row g-3" *ngIf="!loading && filteredCustomers.length > 0">
+    <div class="col-md-4 col-lg-3" *ngFor="let c of filteredCustomers">
+      <div class="customer-card">
+        <div class="cust-avatar" [style.background]="getAvatarColor(c.name)">
+          {{ getInitials(c.name) }}
         </div>
-        <button class="btn btn-sm btn-danger"
-                (click)="deleteCustomer(c.id)">
-          Delete
-        </button>
-      </li>
-    </ul>
+        <div class="cust-info">
+          <div class="cust-name">{{ c.name }}</div>
+          <div class="cust-email">
+            <i class="ti ti-mail"></i> {{ c.email }}
+          </div>
+          <div class="cust-address" *ngIf="c.address">
+            <i class="ti ti-map-pin"></i> {{ c.address }}
+          </div>
+        </div>
+        <div class="cust-actions">
+          <button class="cust-btn edit" (click)="openEdit(c)" title="Edit">
+            <i class="ti ti-pencil"></i>
+          </button>
+          <button class="cust-btn del" (click)="deleteCustomer(c.id)" [disabled]="deletingId === c.id" title="Delete">
+            <span *ngIf="deletingId === c.id" class="spinner-border spinner-border-sm"></span>
+            <i *ngIf="deletingId !== c.id" class="ti ti-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer count -->
+  <div class="text-muted small mt-3" *ngIf="filteredCustomers.length > 0">
+    Showing {{ filteredCustomers.length }} of {{ customers.length }} customers
+  </div>
+
+</div>
+
+<!-- ===== Edit Customer Modal ===== -->
+<div class="modal-backdrop-custom" *ngIf="showEditModal" (click)="showEditModal = false"></div>
+<div class="edit-modal" *ngIf="showEditModal" role="dialog">
+  <div class="edit-modal-header">
+    <span class="edit-modal-title"><i class="ti ti-pencil me-2"></i>Edit Customer</span>
+    <button class="modal-close-btn" (click)="showEditModal = false"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="edit-modal-body">
+    <div class="mb-3">
+      <label class="form-label small fw-semibold">Full Name *</label>
+      <div class="input-group-ti">
+        <i class="ti ti-user"></i>
+        <input class="ti-input" type="text" [(ngModel)]="editCustomer.name">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label small fw-semibold">Email *</label>
+      <div class="input-group-ti">
+        <i class="ti ti-mail"></i>
+        <input class="ti-input" type="email" [(ngModel)]="editCustomer.email">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label small fw-semibold">Address</label>
+      <div class="input-group-ti">
+        <i class="ti ti-map-pin"></i>
+        <input class="ti-input" type="text" [(ngModel)]="editCustomer.address">
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-outline-secondary flex-1" (click)="showEditModal = false">Cancel</button>
+      <button class="btn btn-primary flex-2 d-flex align-items-center justify-content-center gap-2"
+              (click)="saveEdit()" [disabled]="editing">
+        <span *ngIf="editing" class="spinner-border spinner-border-sm"></span>
+        <i *ngIf="!editing" class="ti ti-check"></i>
+        {{ editing ? 'Saving…' : 'Save Changes' }}
+      </button>
+    </div>
   </div>
 </div>

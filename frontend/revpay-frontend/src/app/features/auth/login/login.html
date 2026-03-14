@@ -5,12 +5,7 @@
 
       <!-- Email or Phone -->
       <div class="form-group">
-        <input
-          type="text"
-          placeholder="Enter email or phone"
-          formControlName="emailOrPhone"
-          class="input-field"
-        />
+        <input type="text" placeholder="Enter email or phone" formControlName="emailOrPhone" class="input-field" />
 
         <div class="error-message">
           <small *ngIf="form.controls['emailOrPhone'].invalid && form.controls['emailOrPhone'].touched">
@@ -23,12 +18,7 @@
 
       <!-- Password -->
       <div class="form-group">
-        <input
-          type="password"
-          placeholder="Enter password"
-          formControlName="password"
-          class="input-field"
-        />
+        <input type="password" placeholder="Enter password" formControlName="password" class="input-field" />
 
         <div class="error-message">
           <small *ngIf="form.controls['password'].invalid && form.controls['password'].touched">
@@ -40,11 +30,7 @@
       </div>
 
       <!-- Sign In Button -->
-      <button
-        type="submit"
-        class="login-button"
-        [disabled]="form.invalid || loading"
-      >
+      <button type="submit" class="login-button" [disabled]="form.invalid || loading">
         <span *ngIf="!loading">Sign In</span>
         <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
       </button>
@@ -52,8 +38,8 @@
       <p class="signup-text">
         No account?
         <a [routerLink]="['/auth/register']" class="signup-link">
-  Sign up
-</a>
+          Sign up
+        </a>
       </p>
     </form>
   </div>

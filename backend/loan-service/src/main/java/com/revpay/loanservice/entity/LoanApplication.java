@@ -10,7 +10,10 @@ import com.revpay.loanservice.enums.LoanType;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "loan_applications")
+@Table(name = "loan_applications", indexes = {
+    @Index(name = "idx_loan_user", columnList = "user_id"),
+    @Index(name = "idx_loan_created", columnList = "created_at DESC")
+})
 public class LoanApplication extends BaseEntity {
 
 	@Id

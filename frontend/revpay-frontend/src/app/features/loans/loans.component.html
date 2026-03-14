@@ -1,69 +1,199 @@
 <div class="loans-page">
-  <h2 class="mb-3">Loans</h2>
 
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5 class="card-title mb-3">Apply for a loan</h5>
-      <form [formGroup]="loanForm" (ngSubmit)="submitLoan()">
-        <div class="row g-2">
-          <div class="col-md-4 mb-2">
-            <label class="form-label">Amount</label>
-            <input type="number" class="form-control" formControlName="amount">
-          </div>
-          <div class="col-md-4 mb-2">
-            <label class="form-label">Tenure (months)</label>
-            <input type="number" class="form-control" formControlName="tenureMonths">
-          </div>
-          <div class="col-md-4 mb-2">
-            <label class="form-label">Purpose</label>
-            <input type="text" class="form-control" formControlName="purpose">
-          </div>
-        </div>
-        <button class="btn btn-primary mt-2" type="submit" [disabled]="applying">
-          Apply
-        </button>
-      </form>
+  <!-- ===== Header & Analytics ===== -->
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+      <h2 class="mb-1"><i class="ti ti-building-bank text-primary me-2"></i>Business Loans</h2>
+      <p class="text-muted small mb-0">Manage your applications and track repayments</p>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title mb-3">Your loans</h5>
-      <div *ngIf="loading" class="text-muted">Loading loans...</div>
-      <div class="table-responsive" *ngIf="!loading">
-        <table class="table table-sm align-middle">
-          <thead>
-          <tr>
-            <th>#</th>
-            <th>ID</th>
-            <th>Amount</th>
-            <th>Purpose</th>
-            <th>Tenure</th>
-            <th>Interest rate</th>
-            <th>Status</th>
-            <th>Created at</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let loan of loans; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td>{{ loan.id }}</td>
-            <td>{{ loan.amount }}</td>
-            <td>{{ loan.purpose }}</td>
-            <td>{{ loan.tenureMonths }} months</td>
-            <td>{{ loan.interestRate }}%</td>
-            <td>{{ loan.status }}</td>
-            <td>{{ loan.createdAt }}</td>
-          </tr>
-          <tr *ngIf="!loans.length">
-            <td colspan="8" class="text-center text-muted py-3">
-              No loans yet.
-            </td>
-          </tr>
-          </tbody>
-        </table>
+    <div class="analytics-mini d-flex gap-3" *ngIf="analytics">
+      <div class="stat-box">
+        <span class="label">Outstanding</span>
+        <span class="value text-danger">{{ analytics.outstandingAmount | currency:'INR' }}</span>
+      </div>
+      <div class="stat-box">
+        <span class="label">Repaid</span>
+        <span class="value text-success">{{ analytics.totalRepaid | currency:'INR' }}</span>
       </div>
     </div>
   </div>
-</div>
 
+  <div class="row g-4">
+    <!-- ===== Left: Application Form ===== -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm apply-card">
+        <div class="card-body p-4">
+          <h5 class="card-title fw-bold mb-4">New Application</h5>
+          
+          <form [formGroup]="loanForm" (ngSubmit)="submitLoan()" class="needs-validation">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-uppercase">Business Name</label>
+              <div class="input-group-ti">
+                <i class="ti ti-briefcase"></i>
+                <input type="text" class="ti-input" formControlName="businessName" placeholder="RevPay Corp">
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-7">
+                <label class="form-label small fw-bold text-uppercase">Loan Type</label>
+                <select class="form-select ti-select" formControlName="loanType">
+                  <option *ngFor="let t of loanTypes" [value]="t">{{ t | titlecase }}</option>
+                </select>
+              </div>
+              <div class="col-5">
+                <label class="form-label small fw-bold text-uppercase">Interest (%)</label>
+                <input type="number" class="form-control" formControlName="interestRate">
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-7">
+                <label class="form-label small fw-bold text-uppercase">Amount (₹)</label>
+                <input type="number" class="form-control" formControlName="amount" placeholder="0.00">
+              </div>
+              <div class="col-5">
+                <label class="form-label small fw-bold text-uppercase">Tenure (Mos)</label>
+                <input type="number" class="form-control" formControlName="tenureMonths">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-uppercase">Purpose</label>
+              <textarea class="form-control" formControlName="purpose" rows="2" placeholder="Expansion, Equipment..."></textarea>
+            </div>
+
+            <button class="btn btn-primary w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2" 
+                    [disabled]="applying">
+              <span *ngIf="applying" class="spinner-border spinner-border-sm"></span>
+              <i *ngIf="!applying" class="ti ti-send"></i>
+              {{ applying ? 'Processing...' : 'Submit Application' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Right: Loan List ===== -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm list-card">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 fw-bold">Active Applications</h5>
+          <button class="btn btn-sm btn-light" (click)="loadLoans()"><i class="ti ti-refresh"></i></button>
+        </div>
+        
+        <div class="card-body p-0">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary opacity-50"></div>
+          </div>
+
+          <div class="table-responsive" *ngIf="!loading">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th class="ps-4">Loan Details</th>
+                  <th>Amount</th>
+                  <th>EMI</th>
+                  <th>Status</th>
+                  <th class="text-end pe-4">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let loan of loans">
+                  <td class="ps-4">
+                    <div class="fw-bold">{{ loan.businessName }}</div>
+                    <div class="small text-muted">{{ loan.loanNumber }} &bull; {{ loan.loanType }}</div>
+                  </td>
+                  <td>
+                    <div class="fw-bold">{{ loan.amount | currency:'INR' }}</div>
+                    <div class="small text-muted">{{ loan.tenureMonths }}m @ {{ loan.interestRate }}%</div>
+                  </td>
+                  <td>
+                    <div class="text-primary fw-bold">{{ loan.monthlyEmi | currency:'INR' }}</div>
+                  </td>
+                  <td>
+                    <span class="badge rounded-pill" [ngClass]="getStatusClass(loan.status)">
+                      {{ loan.status }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" 
+                            (click)="openRepayments(loan)">
+                      History
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="!loans.length">
+                  <td colspan="5" class="text-center py-5 text-muted">
+                    <i class="ti ti-clipboard-text d-block mb-2 opacity-25" style="font-size: 2.5rem;"></i>
+                    No loan applications found.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Repayments Drawer/Modal ===== -->
+  <div class="repayments-overlay" *ngIf="selectedLoan" (click)="selectedLoan = null"></div>
+  <div class="repayments-drawer" [class.open]="selectedLoan">
+    <div class="drawer-header d-flex justify-content-between align-items-center p-3 border-bottom sticky-top bg-white">
+      <div>
+        <h6 class="mb-0 fw-bold">Loan: {{ selectedLoan?.loanNumber }}</h6>
+        <small class="text-muted">{{ selectedLoan?.businessName }}</small>
+      </div>
+      <button class="btn-close" (click)="selectedLoan = null"></button>
+    </div>
+
+    <div class="drawer-body p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold">Repayments</h6>
+        <button class="btn btn-sm btn-primary py-1 px-3" (click)="openRepayModal()">
+          <i class="ti ti-plus me-1"></i> Pay
+        </button>
+      </div>
+
+      <div *ngIf="repaymentsLoading" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>
+      
+      <div class="repayment-list" *ngIf="!repaymentsLoading">
+        <div class="repayment-item p-2 border-bottom mb-2 d-flex justify-content-between" *ngFor="let r of repayments">
+          <div>
+            <div class="fw-bold text-success">+ {{ r.amount | currency:'INR' }}</div>
+            <div class="small text-muted">{{ r.paidAt | date:'mediumDate' }}</div>
+          </div>
+          <div class="small text-end fst-italic text-muted maxWidth-150">{{ r.note }}</div>
+        </div>
+        <div *ngIf="!repayments.length" class="text-center py-4 text-muted small">No repayments yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Add Repayment Modal ===== -->
+  <div class="modal-backdrop-custom" *ngIf="showRepayModal" (click)="showRepayModal = false"></div>
+  <div class="edit-modal" *ngIf="showRepayModal">
+    <div class="edit-modal-header">
+      <span class="edit-modal-title">Record Repayment</span>
+      <button class="modal-close-btn" (click)="showRepayModal = false"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="edit-modal-body">
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Amount (₹)</label>
+        <input type="number" class="form-control" [(ngModel)]="repayAmount" placeholder="Enter amount">
+      </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Note</label>
+        <textarea class="form-control" [(ngModel)]="repayNote" rows="2" placeholder="Reference, transaction ID..."></textarea>
+      </div>
+      <button class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2" 
+              (click)="submitRepayment()" [disabled]="repaying">
+        <span *ngIf="repaying" class="spinner-border spinner-border-sm"></span>
+        <i *ngIf="!repaying" class="ti ti-device-floppy"></i>
+        Save Repayment
+      </button>
+    </div>
+  </div>
+
+</div>
