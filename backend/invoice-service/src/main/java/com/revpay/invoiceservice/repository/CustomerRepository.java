@@ -10,9 +10,7 @@ import com.revpay.invoiceservice.entity.Customer;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
-    @EntityGraph(attributePaths = {"invoices"})
-    List<Customer> findByOwnerUserIdOrderByCreatedAtDesc(Long ownerUserId);
+    List<Customer> findByOwnerUserIdOrderByCreatedAtDescIdDesc(Long ownerUserId);
 
-    @EntityGraph(attributePaths = {"invoices"})
     Optional<Customer> findByIdAndOwnerUserId(Long id, Long ownerUserId);
 }

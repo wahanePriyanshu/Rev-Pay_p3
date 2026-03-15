@@ -23,7 +23,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationResponse> getMyNotifications(Long userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+        return notificationRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

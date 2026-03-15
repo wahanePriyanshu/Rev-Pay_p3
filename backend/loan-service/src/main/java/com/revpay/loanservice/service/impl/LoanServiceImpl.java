@@ -62,7 +62,7 @@ public class LoanServiceImpl implements LoanService {
 
 	@Override
 	public List<LoanResponse> getMyLoans(Long userId) {
-		return loanRepository.findByUserIdOrderByCreatedAtDesc(userId).stream().map(this::mapToLoanResponse).toList();
+		return loanRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId).stream().map(this::mapToLoanResponse).toList();
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class LoanServiceImpl implements LoanService {
 
 	@Override
 	public LoanAnalyticsResponse getAnalytics(Long userId) {
-		List<LoanApplication> loans = loanRepository.findByUserIdOrderByCreatedAtDesc(userId);
+		List<LoanApplication> loans = loanRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId);
 
 		BigDecimal totalBorrowed = loans.stream().map(LoanApplication::getAmount).reduce(BigDecimal.ZERO,
 				BigDecimal::add);

@@ -31,7 +31,7 @@ public class LoanApplication extends BaseEntity {
 	private String businessName;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "loan_type", nullable = false)
+	@Column(name = "loan_type", nullable = false, length = 50)
 	private LoanType loanType;
 
 	@Column(nullable = false, precision = 19, scale = 2)

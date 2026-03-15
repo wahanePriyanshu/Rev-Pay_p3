@@ -11,7 +11,7 @@ import com.revpay.loanservice.entity.LoanApplication;
 public interface LoanApplicationRepository extends JpaRepository<LoanApplication, Long> {
     
     @EntityGraph(attributePaths = {"documents", "repayments"})
-    List<LoanApplication> findByUserIdOrderByCreatedAtDesc(Long userId);
+    List<LoanApplication> findByUserIdOrderByCreatedAtDescIdDesc(Long userId);
 
     @EntityGraph(attributePaths = {"documents", "repayments"})
     Optional<LoanApplication> findByIdAndUserId(Long id, Long userId);

@@ -31,7 +31,7 @@ public class ActivityServiceImpl implements ActivityService {
         List<ActivityResponse> activityList = new ArrayList<>();
 
         List<Transaction> transactions =
-                transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDesc(userId, userId);
+                transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDescIdDesc(userId, userId);
 
         for (Transaction transaction : transactions) {
             ActivityResponse response = new ActivityResponse();
@@ -47,7 +47,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         List<MoneyRequest> outgoingRequests =
-                moneyRequestRepository.findByRequesterUserIdOrderByCreatedAtDesc(userId);
+                moneyRequestRepository.findByRequesterUserIdOrderByCreatedAtDescIdDesc(userId);
 
         for (MoneyRequest request : outgoingRequests) {
             ActivityResponse response = new ActivityResponse();
@@ -63,7 +63,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         List<MoneyRequest> incomingRequests =
-                moneyRequestRepository.findByPayerUserIdOrderByCreatedAtDesc(userId);
+                moneyRequestRepository.findByPayerUserIdOrderByCreatedAtDescIdDesc(userId);
 
         for (MoneyRequest request : incomingRequests) {
             ActivityResponse response = new ActivityResponse();

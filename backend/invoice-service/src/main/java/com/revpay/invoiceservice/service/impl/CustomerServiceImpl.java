@@ -37,7 +37,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerResponse> getMyCustomers(Long ownerUserId) {
-        return customerRepository.findByOwnerUserIdOrderByCreatedAtDesc(ownerUserId)
+        return customerRepository.findByOwnerUserIdOrderByCreatedAtDescIdDesc(ownerUserId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

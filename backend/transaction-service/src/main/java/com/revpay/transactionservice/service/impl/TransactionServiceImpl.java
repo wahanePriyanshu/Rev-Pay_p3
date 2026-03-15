@@ -205,19 +205,19 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public List<MoneyRequestResponse> getOutgoingRequests(Long requesterUserId) {
-		return moneyRequestRepository.findByRequesterUserIdOrderByCreatedAtDesc(requesterUserId).stream()
+		return moneyRequestRepository.findByRequesterUserIdOrderByCreatedAtDescIdDesc(requesterUserId).stream()
 				.map(this::mapToMoneyRequestResponse).toList();
 	}
 
 	@Override
 	public List<MoneyRequestResponse> getIncomingRequests(Long payerUserId) {
-		return moneyRequestRepository.findByPayerUserIdOrderByCreatedAtDesc(payerUserId).stream()
+		return moneyRequestRepository.findByPayerUserIdOrderByCreatedAtDescIdDesc(payerUserId).stream()
 				.map(this::mapToMoneyRequestResponse).toList();
 	}
 
 	@Override
 	public List<TransactionResponse> getMyTransactions(Long userId) {
-		return transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDesc(userId, userId).stream()
+		return transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDescIdDesc(userId, userId).stream()
 				.map(this::mapToTransactionResponse).toList();
 	}
 

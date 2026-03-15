@@ -30,7 +30,7 @@ public class TransactionExportServiceImpl implements TransactionExportService {
     public ByteArrayInputStream exportTransactionsToCSV(Long userId) {
 
         List<Transaction> transactions =
-                transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDesc(userId, userId);
+                transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDescIdDesc(userId, userId);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -74,7 +74,7 @@ public class TransactionExportServiceImpl implements TransactionExportService {
     public ByteArrayInputStream exportTransactionsToPDF(Long userId) {
 
         List<Transaction> transactions =
-                transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDesc(userId, userId);
+                transactionRepository.findBySenderUserIdOrReceiverUserIdOrderByCreatedAtDescIdDesc(userId, userId);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 

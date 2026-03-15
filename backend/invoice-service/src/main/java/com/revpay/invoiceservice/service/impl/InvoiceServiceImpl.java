@@ -77,7 +77,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceResponse> getMyInvoices(Long ownerUserId) {
-        return invoiceRepository.findByOwnerUserIdOrderByCreatedAtDesc(ownerUserId)
+        return invoiceRepository.findByOwnerUserIdOrderByCreatedAtDescIdDesc(ownerUserId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
